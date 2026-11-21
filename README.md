@@ -183,6 +183,50 @@ for each pair. Each API call is measured in hardware cycles and elapsed
 milliseconds using `CLOCK_MONOTONIC_RAW`. The `fp2_mul` latency benchmark
 has a fixed sample size.
 
+#### Raspberry Pi 5 results
+
+The results below are from a native Raspberry Pi 5 run of `./bench 160`.
+
+```text
+Before  f417ebd4c2c336ad6a9feb6f9255f95fc03acc41
+After   419afbf757a6fbd9f0338620468f166c14ead372
+ARM64 Release, CPU 2, 160 paired API trials per level
+CPU frequency at start (kHz)  2400000
+
+Level 1 (p324_3)
+Both builds passed 21,760 field checks including edges and aliases.
+fp2_mul median (13 rounds of 65,536 calls)
+  925.592 → 260.937 cycles/call, saving 71.81%
+Paired and cross-verified 160/160 API trials.
+API averages over 160 paired trials
+Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
+Keygen             115.713          72.154   37.64%       48.245       30.084   37.64%
+Sign               330.293         212.279   35.73%      137.708       88.506   35.73%
+Verify              50.623          28.092   44.51%       21.105       11.712   44.50%
+
+Level 3 (p500_27)
+Both builds passed 21,760 field checks including edges and aliases.
+fp2_mul median (13 rounds of 65,536 calls)
+  1,584.088 → 576.132 cycles/call, saving 63.63%
+Paired and cross-verified 160/160 API trials.
+API averages over 160 paired trials
+Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
+Keygen             376.143         269.237   28.42%      156.830      112.247   28.43%
+Sign             1,066.542         777.198   27.13%      444.653      324.049   27.12%
+Verify             137.565          82.700   39.88%       57.348       34.480   39.88%
+
+Level 5 (p664_17)
+Both builds passed 21,760 field checks including edges and aliases.
+fp2_mul median (13 rounds of 65,536 calls)
+  2,883.380 → 1,072.905 cycles/call, saving 62.79%
+Paired and cross-verified 160/160 API trials.
+API averages over 160 paired trials
+Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
+Keygen             825.771         567.436   31.28%      344.252      236.565   31.28%
+Sign             2,547.138       1,848.545   27.43%    1,061.924      770.697   27.42%
+Verify             341.277         207.230   39.28%      142.270       86.395   39.27%
+```
+
 ## Examples
 
 Example code that demonstrates how to use SQIsign with the NIST API is available
