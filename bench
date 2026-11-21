@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+umask 077
+
+usage() {
+    printf 'Usage: %s [paired-api-trials-per-level]\n' "${0##*/}"
+    printf 'Default: 5 paired API trials per level. The field benchmark uses a fixed sample size.\n'
+}
+
+case "${1:-}" in
+    -h|--help)
+        if [[ $# -eq 1 ]]; then
+            usage
+            exit 0
+        fi
+        ;;
+esac
+trials=${1-5}
+if [[ $# -gt 1 || ! "$trials" =~ ^[1-9][0-9]*$ ]]; then
+    usage >&2
+    exit 2
+fi
+
+case "$(uname -s):$(uname -m)" in
+    Linux:aarch64|Linux:arm64) ;;
+    *)
+        printf 'This benchmark requires native AArch64 Linux.\n' >&2
+        exit 2
+        ;;
+esac
+
+for tool in git cmake ninja python3 taskset; do
+    if ! command -v "$tool" >/dev/null; then
+        printf 'Required command unavailable: %s\n' "$tool" >&2
+        exit 2
+    fi
+done
+cmake_version=$(cmake --version)
+if [[ "$cmake_version" =~ ^cmake\ version\ ([0-9]+)\.([0-9]+) ]]; then
+    if (( BASH_REMATCH[1] < 3 || (BASH_REMATCH[1] == 3 && BASH_REMATCH[2] < 24) )); then
+        printf 'The benchmark requires CMake 3.24 or later.\n' >&2
+        exit 2
+    fi
+fi
+
+root=$(cd -- "$(dirname -- "$0")" && pwd)
+before=f417ebd4c2c336ad6a9feb6f9255f95fc03acc41
+after=$(git -C "$root" rev-parse --verify HEAD)
+if ! git -C "$root" cat-file -e "$before^{commit}" 2>/dev/null; then
+    printf 'Baseline commit %s is missing. Use a clone that includes this commit.\n' "$before" >&2
+    exit 2
+fi
+cpu=$(python3 -c 'import os; allowed = os.sched_getaffinity(0); print(2 if 2 in allowed else min(allowed))')
+
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/sqisign-bench.XXXXXXXX")
+trap 'rm -rf -- "$scratch"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+cd "$scratch"
+ulimit -c 0
+
+printf 'Before  %s\nAfter   %s\n' "$before" "$after"
+printf 'ARM64 Release, CPU %s, %s paired API trials per level\n' "$cpu" "$trials"
+if [[ -r /sys/devices/system/cpu/cpu$cpu/cpufreq/scaling_cur_freq ]]; then
+    printf 'CPU frequency at start (kHz)  %s\n' "$(< "/sys/devices/system/cpu/cpu$cpu/cpufreq/scaling_cur_freq")"
+fi
+git -C "$root" archive --prefix=before/ "$before" | tar -xf -
+git -C "$root" archive --prefix=after/ "$after" | tar -xf -
+
+harness="$scratch/after/scripts/fp2-bench"
+if [[ ! -f "$harness/compare.py" || ! -f "$harness/bench.cmake" || ! -f "$harness/bench.c" ]]; then
+    printf 'Commit the benchmark files before running ./bench against HEAD.\n' >&2
+    exit 2
+fi
+
+variants=(p324_3 p500_27 p664_17)
+levels=(1 3 5)
+targets=()
+for variant in "${variants[@]}"; do
+    targets+=("fp2_bench_$variant")
+done
+
+run_logged() {
+    local log=$1
+    shift
+    if ! "$@" >"$log" 2>&1; then
+        tail -80 "$log" >&2
+        return 1
+    fi
+}
+for side in before after; do
+    printf '\nBuilding %s\n' "$side"
+    run_logged "configure-$side.log" cmake -S "$side" -B "build-$side" -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release -DSQISIGN_BUILD_TYPE=arm64 \
+        -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="$harness/bench.cmake"
+    run_logged "build-$side.log" cmake --build "build-$side" --parallel 3 --target "${targets[@]}"
+done
+
+for i in "${!variants[@]}"; do
+    variant=${variants[i]}
+    printf '\nLevel %s (%s)\n' "${levels[i]}" "$variant"
+    mkdir "$variant"
+    python3 -B -u "$harness/compare.py" "$variant" "$trials" "$cpu" "$scratch/$variant" \
+        "$scratch/build-before/fp2_bench_$variant" "$scratch/build-after/fp2_bench_$variant"
+done

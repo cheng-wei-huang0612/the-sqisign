@@ -161,6 +161,28 @@ omitted, a default of 10 iterations is used.
 
 The benchmarks profile the key generation, signature and verification functions. The results are reported in CPU cycles if available on the host platform, and timing in nanoseconds otherwise.
 
+### ARM64 before/after benchmark
+
+Run from a Git checkout on native AArch64 Linux with a C compiler, CMake
+3.24 or newer, Ninja, Python 3.8 or newer, and permission to read user-mode
+hardware cycles through `perf_event_open`.
+
+```sh
+./bench
+./bench 160
+```
+
+The benchmark builds the pinned upstream commit `f417ebd` and the current
+`HEAD` with the same ARM64 Release options. The baseline commit must be
+present in the checkout's Git history. The two builds and the test fixtures
+are created in a temporary directory.
+
+The optional positive integer sets the number of paired API trials per level
+for Levels 1, 3, and 5. The default is 5. Matched seeds and messages are used
+for each pair. Each API call is measured in hardware cycles and elapsed
+milliseconds using `CLOCK_MONOTONIC_RAW`. The `fp2_mul` latency benchmark
+has a fixed sample size.
+
 ## Examples
 
 Example code that demonstrates how to use SQIsign with the NIST API is available
