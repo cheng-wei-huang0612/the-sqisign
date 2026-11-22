@@ -293,1181 +293,1164 @@ fp_sub:
 //***********************************************************************
 //  Multiplication in GF(p^2), both components
 //  Fork modification: replace the generated body with the optimized kernel.
-//  Source artifact SHA-256: 89aecf16d4f8d3b9f30ced2ab22a0ca1c19f4511d7770bd249b6d9f89b5d79f4
+//  Source artifact SHA-256: 4a9805bcb15bc54ac6d6489a8cbb7d33093efb28556d0f7230db47178eb36f23
 //  Montgomery coefficients use R = 2^512, inputs in [0, 2p), and outputs in [0, p).
 //  Calling convention: x0 = out, x1 = a, x2 = b. The output may alias either input.
 //***********************************************************************
 .global fp2_mul
 .p2align 6
 fp2_mul:
-    stp x19, x20, [sp, #-144]!
+    stp x19, x20, [sp, #-128]!
     stp x21, x22, [sp, #16]
     stp x23, x24, [sp, #32]
     stp x25, x26, [sp, #48]
-    stp x27, x28, [sp, #64]
-    stp d8, d9, [sp, #80]
-    stp d10, d11, [sp, #96]
-    stp d12, d13, [sp, #112]
-    stp d14, d15, [sp, #128]
-    movz x14, #0xfffe
-    mov x12, #1
-    movi v11.16B, #0
+    stp d8, d9, [sp, #64]
+    stp d10, d11, [sp, #80]
+    stp d12, d13, [sp, #96]
+    stp d14, d15, [sp, #112]
+    movi v9.16B, #255
+    movi v14.16B, #0
+    movz x21, #0xfffe
+    mov x15, #1
+    movk x21, #0x50f, lsl #16
+    movi v1.16B, #0
+    movi v5.16B, #0
     ldp q16, q17, [x1, #0]
+    ushr v12.4S, v9.4S, #2
     ldp q18, q19, [x1, #32]
-    movi v10.16B, #0
-    movi v3.16B, #255
-    movi v8.16B, #0
-    movk x14, #0x50f, lsl #16
-    ushr v15.4S, v3.4S, #2
+    ldp x14, x8, [x1, #64]
+    shl v9.4S, v12.4S, #1
+    ins v5.s[0], w15
+    ldp x16, x17, [x1, #80]
+    ldp x25, x20, [x1, #96]
     ext v13.16B, v16.16B, v16.16B, #7
-    ext v2.16B, v16.16B, v17.16B, #15
-    ext v5.16B, v18.16B, v19.16B, #13
-    ext v4.16B, v17.16B, v18.16B, #14
-    ext v3.16B, v2.16B, v2.16B, #7
-    ushr v13.2D, v13.2D, #4
-    shl v0.4S, v15.4S, #1
-    ext v12.16B, v5.16B, v5.16B, #7
-    ushr v9.2D, v3.2D, #4
-    ext v3.16B, v4.16B, v4.16B, #7
-    zip1 v1.2D, v16.2D, v13.2D
-    ushr v12.2D, v12.2D, #4
-    ldp q16, q17, [x1, #64]
-    zip1 v14.2D, v2.2D, v9.2D
-    ushr v6.2D, v3.2D, #4
-    ext v20.16B, v19.16B, v10.16B, #12
-    ldp q18, q19, [x1, #96]
-    zip1 v9.2D, v5.2D, v12.2D
-    ushr v12.2D, v14.2D, #30
-    zip1 v3.2D, v4.2D, v6.2D
-    ushr v6.2D, v1.2D, #30
-    umov x4, v16.d[0]
-    ext v13.16B, v16.16B, v17.16B, #15
-    ins v11.s[0], w12
-    umov x11, v18.d[1]
-    trn1 v5.4S, v1.4S, v6.4S
-    umov x27, v19.d[1]
-    ext v4.16B, v13.16B, v13.16B, #7
-    ushr v2.2D, v3.2D, #30
-    ext v6.16B, v17.16B, v18.16B, #14
-    ext v1.16B, v16.16B, v16.16B, #7
-    ushr v4.2D, v4.2D, #4
-    ins v8.s[0], w14
-    ext v7.16B, v6.16B, v6.16B, #7
-    umov x23, v17.d[0]
-    ushr v1.2D, v1.2D, #4
-    zip1 v4.2D, v13.2D, v4.2D
-    trn1 v12.4S, v14.4S, v12.4S
-    umov x13, v16.d[1]
-    zip1 v1.2D, v16.2D, v1.2D
-    ushr v14.2D, v7.2D, #4
-    and v26.16B, v12.16B, v15.16B
-    umov x24, v19.d[0]
-    trn1 v13.4S, v3.4S, v2.4S
-    zip1 v2.2D, v6.2D, v14.2D
-    ushr v14.2D, v1.2D, #30
-    ext v7.16B, v18.16B, v19.16B, #13
-    ushr v3.2D, v4.2D, #30
-    and v28.16B, v13.16B, v15.16B
-    trn1 v6.4S, v1.4S, v14.4S
-    ushr v13.2D, v2.2D, #30
-    trn1 v1.4S, v4.4S, v3.4S
-    ushr v14.2D, v9.2D, #30
-    and v25.16B, v6.16B, v15.16B
-    and v24.16B, v5.16B, v15.16B
-    trn1 v5.4S, v2.4S, v13.4S
-    trn1 v3.4S, v9.4S, v14.4S
-    and v27.16B, v1.16B, v15.16B
-    umov x26, v18.d[0]
-    and v30.16B, v3.16B, v15.16B
-    and v29.16B, v5.16B, v15.16B
-    ext v21.16B, v19.16B, v10.16B, #12
-    ext v4.16B, v7.16B, v7.16B, #7
-    add v14.4S, v24.4S, v25.4S
-    sub v5.4S, v24.4S, v25.4S
-    sub v9.4S, v26.4S, v27.4S
-    ushr v6.2D, v4.2D, #4
-    add v3.4S, v5.4S, v0.4S
-    ushr v5.4S, v14.4S, #30
-    zip1 v6.2D, v7.2D, v6.2D
-    and v13.16B, v14.16B, v15.16B
-    sub v2.4S, v3.4S, v11.4S
-    ext v7.16B, v10.16B, v5.16B, #12
-    add v1.4S, v9.4S, v0.4S
-    ldp q18, q19, [x2, #32]
-    ushr v12.2D, v6.2D, #30
-    and v11.16B, v2.16B, v15.16B
-    ushr v9.4S, v2.4S, #30
-    add v25.4S, v13.4S, v7.4S
-    trn1 v12.4S, v6.4S, v12.4S
-    add v7.4S, v26.4S, v27.4S
-    ext v4.16B, v10.16B, v9.16B, #12
-    ushr v6.4S, v1.4S, #30
-    and v31.16B, v12.16B, v15.16B
-    and v1.16B, v1.16B, v15.16B
-    add v24.4S, v11.4S, v4.4S
-    umov x5, v17.d[1]
-    ldp q16, q17, [x2, #0]
-    ext v11.16B, v9.16B, v6.16B, #12
-    ushr v12.4S, v7.4S, #30
-    zip2 v14.4S, v24.4S, v25.4S
-    zip1 v2.4S, v24.4S, v25.4S
-    add v26.4S, v1.4S, v11.4S
-    and v11.16B, v7.16B, v15.16B
-    sub v3.4S, v28.4S, v29.4S
-    ext v5.16B, v5.16B, v12.16B, #12
-    add v4.4S, v28.4S, v29.4S
-    sub v13.4S, v30.4S, v31.4S
-    add v1.4S, v3.4S, v0.4S
-    add v27.4S, v11.4S, v5.4S
-    ushr v5.4S, v4.4S, #30
-    add v3.4S, v13.4S, v0.4S
-    and v4.16B, v4.16B, v15.16B
-    umov x14, v16.d[0]
-    ext v9.16B, v12.16B, v5.16B, #12
-    ushr v0.4S, v3.4S, #30
-    umov x6, v16.d[1]
-    and v7.16B, v3.16B, v15.16B
-    subs x16, x14, #2
-    add v12.4S, v30.4S, v31.4S
-    umov x25, v18.d[1]
-    mov x19, #0x360000000000000
-    umov x10, v17.d[0]
-    add v11.4S, v20.4S, v21.4S
-    add v29.4S, v4.4S, v9.4S
-    sbcs x12, x6, xzr
-    ushr v13.4S, v1.4S, #30
-    umov x20, v17.d[1]
-    sub v4.4S, v20.4S, v21.4S
-    sbcs x14, x10, xzr
-    ext v9.16B, v13.16B, v0.16B, #12
-    umov x7, v18.d[0]
-    and v3.16B, v11.16B, v15.16B
-    umov x8, v19.d[1]
-    sbcs x10, x20, xzr
-    sbcs x20, x7, xzr
-    umov x15, v19.d[0]
-    add v30.4S, v7.4S, v9.4S
-    sbcs x9, x25, xzr
-    ext v6.16B, v6.16B, v13.16B, #12
-    sbcs x7, x15, xzr
-    and v13.16B, v1.16B, v15.16B
-    ext v9.16B, v16.16B, v16.16B, #7
-    ushr v1.4S, v12.4S, #30
-    sbc x28, x8, xzr
-    and v7.16B, v12.16B, v15.16B
-    ushr v12.2D, v9.2D, #4
-    add v9.4S, v4.4S, v8.4S
-    add x15, x28, x19
-    add v28.4S, v13.4S, v6.4S
-    ushr v11.4S, v11.4S, #30
-    and v4.16B, v9.16B, v15.16B
-    ext v8.16B, v16.16B, v17.16B, #15
-    zip1 v13.2D, v16.2D, v12.2D
-    ext v12.16B, v1.16B, v11.16B, #12
-    ext v6.16B, v5.16B, v1.16B, #12
-    ext v1.16B, v8.16B, v8.16B, #7
-    zip2 v11.4S, v28.4S, v29.4S
-    ushr v5.4S, v9.4S, #30
-    add v21.4S, v3.4S, v12.4S
-    ushr v12.2D, v1.2D, #4
-    ext v1.16B, v0.16B, v5.16B, #12
-    zip1 v5.4S, v26.4S, v27.4S
-    zip1 v3.2D, v8.2D, v12.2D
+    ext v11.16B, v16.16B, v17.16B, #15
     ext v0.16B, v17.16B, v18.16B, #14
-    ext v9.16B, v18.16B, v19.16B, #13
-    ldp q16, q17, [x2, #64]
-    ushr v8.2D, v13.2D, #30
-    ushr v12.2D, v3.2D, #30
-    add v20.4S, v4.4S, v1.4S
-    trn1 v4.4S, v13.4S, v8.4S
-    zip2 v13.4S, v26.4S, v27.4S
-    zip1 v8.4S, v20.4S, v21.4S
-    ext v20.16B, v19.16B, v10.16B, #12
-    ldp q18, q19, [x2, #96]
-    add v31.4S, v7.4S, v6.4S
-    ext v7.16B, v16.16B, v17.16B, #15
-    trn1 v1.4S, v3.4S, v12.4S
-    umov x6, v16.d[0]
-    ext v3.16B, v7.16B, v7.16B, #7
-    and v24.16B, v4.16B, v15.16B
-    subs x6, x16, x6
-    umov x8, v17.d[1]
-    ext v4.16B, v17.16B, v18.16B, #14
-    and v26.16B, v1.16B, v15.16B
+    ushr v2.2D, v13.2D, #4
+    ext v8.16B, v18.16B, v19.16B, #13
+    ext v10.16B, v11.16B, v11.16B, #7
+    ext v4.16B, v0.16B, v0.16B, #7
+    zip1 v7.2D, v16.2D, v2.2D
+    ext v3.16B, v8.16B, v8.16B, #7
+    ldp q16, q17, [x1, #64]
+    ushr v10.2D, v10.2D, #4
+    ext v20.16B, v19.16B, v14.16B, #12
+    ldp q18, q19, [x1, #96]
+    ushr v13.2D, v7.2D, #30
+    zip1 v10.2D, v11.2D, v10.2D
+    ushr v4.2D, v4.2D, #4
+    ext v11.16B, v16.16B, v16.16B, #7
+    trn1 v6.4S, v7.4S, v13.4S
     ushr v3.2D, v3.2D, #4
-    umov x17, v16.d[1]
-    ext v12.16B, v4.16B, v4.16B, #7
-    zip1 v1.2D, v7.2D, v3.2D
-    umov x3, v18.d[0]
-    sbcs x22, x12, x17
-    ext v3.16B, v0.16B, v0.16B, #7
-    ushr v12.2D, v12.2D, #4
-    ext v7.16B, v18.16B, v19.16B, #13
-    mul x28, x4, x6
-    ushr v6.2D, v1.2D, #30
-    ext v21.16B, v19.16B, v10.16B, #12
-    umov x17, v17.d[0]
-    zip1 v10.2D, v4.2D, v12.2D
-    trn1 v12.4S, v1.4S, v6.4S
-    ushr v1.2D, v3.2D, #4
-    umulh x16, x4, x6
-    sbcs x17, x14, x17
-    ext v3.16B, v9.16B, v9.16B, #7
-    ushr v4.2D, v10.2D, #30
-    zip1 v0.2D, v0.2D, v1.2D
-    ext v1.16B, v16.16B, v16.16B, #7
-    sbcs x10, x10, x8
-    and v27.16B, v12.16B, v15.16B
-    trn1 v10.4S, v10.4S, v4.4S
-    sbcs x3, x20, x3
-    zip1 v4.4S, v28.4S, v29.4S
-    ushr v12.2D, v1.2D, #4
-    ushr v1.2D, v3.2D, #4
-    and v29.16B, v10.16B, v15.16B
-    ushr v6.2D, v0.2D, #30
-    zip1 v3.2D, v16.2D, v12.2D
-    ext v12.16B, v7.16B, v7.16B, #7
-    zip1 v1.2D, v9.2D, v1.2D
-    trn1 v10.4S, v0.4S, v6.4S
-    ushr v9.2D, v3.2D, #30
-    and v28.16B, v10.16B, v15.16B
-    umulh x14, x4, x22
-    zip1 v10.4S, v26.4S, v27.4S
-    umov x8, v18.d[1]
-    trn1 v9.4S, v3.4S, v9.4S
-    ushr v12.2D, v12.2D, #4
-    sbcs x8, x9, x8
-    umov x25, v19.d[0]
-    and v25.16B, v9.16B, v15.16B
-    zip1 v0.2D, v7.2D, v12.2D
-    mul x12, x13, x6
-    ushr v12.2D, v1.2D, #30
-    sbcs x9, x7, x25
-    zip1 v9.4S, v28.4S, v29.4S
-    zip1 v3.4S, v24.4S, v25.4S
-    zip2 v27.4S, v26.4S, v27.4S
-    mov x7, x28
-    and x21, x7, #0xfffffffffffffff
-    zip2 v25.4S, v24.4S, v25.4S
-    orr v26.16B, v10.16B, v10.16B
-    umulh x20, x13, x6
-    orr v24.16B, v3.16B, v3.16B
-    zip2 v29.4S, v28.4S, v29.4S
-    dup v6.2D, x21
-    trn1 v10.4S, v1.4S, v12.4S
-    orr v28.16B, v9.16B, v9.16B
-    ext v1.16B, v24.16B, v24.16B, #8
-    mul x19, x4, x22
-    ushr v7.2D, v0.2D, #30
-    umull v12.2D, v14.2S, v24.2S
-    umull2 v9.2D, v2.4S, v1.4S
-    umov x25, v19.d[1]
-    trn1 v3.4S, v0.4S, v7.4S
-    umull v0.2D, v2.2S, v24.2S
-    mul x21, x4, x17
-    umlal2 v12.2D, v2.4S, v24.4S
-    sbc x25, x15, x25
-    zip1 v7.4S, v30.4S, v31.4S
-    adds x19, x16, x19
-    umlal v9.2D, v2.2S, v1.2S
-    adc x16, xzr, x14
-    adds x14, x19, x12
-    umlal v12.2D, v2.2S, v25.2S
-    movi v1.16B, #255
-    umulh x28, x4, x17
-    add v0.2D, v0.2D, v6.2D
-    adcs x12, x16, x20
-    mov x16, x14
+    ushr v13.2D, v10.2D, #30
+    zip1 v0.2D, v0.2D, v4.2D
+    and v24.16B, v6.16B, v12.16B
+    zip1 v6.2D, v8.2D, v3.2D
+    trn1 v4.4S, v10.4S, v13.4S
+    ushr v13.2D, v0.2D, #30
+    ushr v8.2D, v6.2D, #30
+    ext v3.16B, v16.16B, v17.16B, #15
+    trn1 v0.4S, v0.4S, v13.4S
+    ushr v13.2D, v11.2D, #4
+    trn1 v6.4S, v6.4S, v8.4S
+    ext v11.16B, v17.16B, v18.16B, #14
+    ext v10.16B, v3.16B, v3.16B, #7
+    and v28.16B, v0.16B, v12.16B
+    ext v2.16B, v18.16B, v19.16B, #13
+    zip1 v0.2D, v16.2D, v13.2D
+    ushr v8.2D, v10.2D, #4
+    and v26.16B, v4.16B, v12.16B
+    ext v13.16B, v2.16B, v2.16B, #7
+    ushr v4.2D, v0.2D, #30
+    zip1 v7.2D, v3.2D, v8.2D
+    and v30.16B, v6.16B, v12.16B
+    ext v3.16B, v11.16B, v11.16B, #7
+    ushr v6.2D, v13.2D, #4
+    ushr v8.2D, v7.2D, #30
+    trn1 v10.4S, v0.4S, v4.4S
+    ushr v4.2D, v3.2D, #4
+    zip1 v6.2D, v2.2D, v6.2D
+    and v25.16B, v10.16B, v12.16B
+    trn1 v13.4S, v7.4S, v8.4S
+    zip1 v8.2D, v11.2D, v4.2D
+    ushr v10.2D, v6.2D, #30
+    and v27.16B, v13.16B, v12.16B
+    ext v21.16B, v19.16B, v14.16B, #12
+    ushr v11.2D, v8.2D, #30
+    trn1 v4.4S, v6.4S, v10.4S
+    sub v13.4S, v24.4S, v25.4S
+    add v10.4S, v26.4S, v27.4S
+    trn1 v8.4S, v8.4S, v11.4S
+    and v31.16B, v4.16B, v12.16B
+    add v11.4S, v24.4S, v25.4S
+    add v13.4S, v13.4S, v9.4S
+    and v29.16B, v8.16B, v12.16B
+    sub v7.4S, v26.4S, v27.4S
+    ushr v0.4S, v11.4S, #30
+    sub v5.4S, v13.4S, v5.4S
+    add v7.4S, v7.4S, v9.4S
+    and v3.16B, v11.16B, v12.16B
+    ext v8.16B, v14.16B, v0.16B, #12
+    ldp q16, q17, [x2, #0]
+    ushr v13.4S, v5.4S, #30
+    and v6.16B, v5.16B, v12.16B
+    ldp q18, q19, [x2, #32]
+    ushr v2.4S, v7.4S, #30
+    add v25.4S, v3.4S, v8.4S
+    ldp x26, x11, [x2, #16]
+    ext v5.16B, v14.16B, v13.16B, #12
+    ushr v3.4S, v10.4S, #30
+    ldp x19, x24, [x2, #32]
+    ext v13.16B, v13.16B, v2.16B, #12
+    and v8.16B, v7.16B, v12.16B
+    ldp x3, x10, [x2, #48]
+    and v4.16B, v10.16B, v12.16B
+    ext v7.16B, v0.16B, v3.16B, #12
+    add v24.4S, v6.4S, v5.4S
+    add v26.4S, v8.4S, v13.4S
+    add v27.4S, v4.4S, v7.4S
+    sub v6.4S, v28.4S, v29.4S
+    add v0.4S, v28.4S, v29.4S
+    sub v7.4S, v30.4S, v31.4S
+    ins v1.s[0], w21
+    sub v13.4S, v20.4S, v21.4S
+    add v10.4S, v6.4S, v9.4S
+    zip2 v11.4S, v26.4S, v27.4S
+    ushr v8.4S, v0.4S, #30
+    and v4.16B, v10.16B, v12.16B
+    ldp x22, x21, [x1, #112]
+    mov x13, #0x360000000000000
+    add v6.4S, v30.4S, v31.4S
+    ushr v10.4S, v10.4S, #30
+    add v13.4S, v13.4S, v1.4S
+    ldp x1, x23, [x2, #0]
+    ushr v1.4S, v6.4S, #30
+    add v7.4S, v7.4S, v9.4S
+    ushr v9.4S, v13.4S, #30
+    ext v3.16B, v3.16B, v8.16B, #12
+    ext v8.16B, v8.16B, v1.16B, #12
+    ushr v5.4S, v7.4S, #30
+    and v0.16B, v0.16B, v12.16B
+    and v13.16B, v13.16B, v12.16B
+    subs x1, x1, #2
+    and v7.16B, v7.16B, v12.16B
+    ext v9.16B, v5.16B, v9.16B, #12
+    sbcs x9, x23, xzr
+    add v29.4S, v0.4S, v3.4S
+    add v0.4S, v20.4S, v21.4S
+    sbcs x26, x26, xzr
+    add v20.4S, v13.4S, v9.4S
+    ext v3.16B, v10.16B, v5.16B, #12
+    sbcs x11, x11, xzr
+    ushr v5.4S, v0.4S, #30
+    ext v13.16B, v18.16B, v19.16B, #13
+    sbcs x6, x19, xzr
+    add v30.4S, v7.4S, v3.4S
+    ext v2.16B, v2.16B, v10.16B, #12
+    sbcs x12, x24, xzr
+    and v3.16B, v0.16B, v12.16B
+    ext v7.16B, v17.16B, v18.16B, #14
+    sbcs x19, x3, xzr
+    add v28.4S, v4.4S, v2.4S
+    zip1 v4.4S, v26.4S, v27.4S
+    sbc x7, x10, xzr
+    ext v0.16B, v16.16B, v17.16B, #15
+    ext v2.16B, v16.16B, v16.16B, #7
+    add x5, x7, x13
+    ext v10.16B, v1.16B, v5.16B, #12
+    ext v1.16B, v7.16B, v7.16B, #7
+    and v5.16B, v6.16B, v12.16B
+    ext v6.16B, v0.16B, v0.16B, #7
+    add v21.4S, v3.4S, v10.4S
+    ushr v9.2D, v2.2D, #4
+    add v31.4S, v5.4S, v8.4S
+    ushr v10.2D, v6.2D, #4
+    zip2 v5.4S, v24.4S, v25.4S
+    ldp x10, x13, [x2, #64]
+    ushr v8.2D, v1.2D, #4
+    zip1 v1.2D, v0.2D, v10.2D
+    zip1 v3.4S, v28.4S, v29.4S
+    ldp x7, x23, [x2, #112]
+    zip1 v0.2D, v16.2D, v9.2D
+    ldp q16, q17, [x2, #64]
+    subs x1, x1, x10
+    ushr v9.2D, v1.2D, #30
+    ldp x24, x3, [x2, #80]
+    ext v10.16B, v13.16B, v13.16B, #7
+    sbcs x4, x9, x13
+    zip1 v8.2D, v7.2D, v8.2D
+    zip1 v7.4S, v20.4S, v21.4S
+    ext v20.16B, v19.16B, v14.16B, #12
+    ldp q18, q19, [x2, #96]
+    ushr v10.2D, v10.2D, #4
+    trn1 v6.4S, v1.4S, v9.4S
+    ldp x15, x13, [x2, #96]
+    ushr v2.2D, v0.2D, #30
+    ext v9.16B, v16.16B, v17.16B, #15
+    zip1 v1.2D, v13.2D, v10.2D
+    sbcs x10, x26, x24
+    ushr v13.2D, v8.2D, #30
+    ext v21.16B, v19.16B, v14.16B, #12
+    ext v14.16B, v9.16B, v9.16B, #7
+    sbcs x3, x11, x3
+    trn1 v8.4S, v8.4S, v13.4S
+    sbcs x6, x6, x15
+    ushr v13.2D, v1.2D, #30
+    ext v10.16B, v17.16B, v18.16B, #14
+    ushr v14.2D, v14.2D, #4
+    mul x15, x14, x1
+    zip1 v9.2D, v9.2D, v14.2D
+    sbcs x24, x12, x13
+    ext v14.16B, v16.16B, v16.16B, #7
+    trn1 v13.4S, v1.4S, v13.4S
+    trn1 v2.4S, v0.4S, v2.4S
+    sbcs x7, x19, x7
+    zip1 v0.4S, v24.4S, v25.4S
+    sbc x2, x5, x23
+    ushr v14.2D, v14.2D, #4
+    and v24.16B, v2.16B, v12.16B
+    umulh x26, x14, x4
+    ushr v1.2D, v9.2D, #30
+    zip2 v2.4S, v28.4S, v29.4S
+    zip1 v14.2D, v16.2D, v14.2D
+    mov x11, x15
+    trn1 v9.4S, v9.4S, v1.4S
+    and x23, x11, #0xfffffffffffffff
+    ext v1.16B, v18.16B, v19.16B, #13
+    and v28.16B, v8.16B, v12.16B
+    ushr v8.2D, v14.2D, #30
+    mul x12, x14, x4
+    and v26.16B, v6.16B, v12.16B
+    ext v6.16B, v10.16B, v10.16B, #7
+    trn1 v14.4S, v14.4S, v8.4S
+    ext v8.16B, v1.16B, v1.16B, #7
+    and v27.16B, v9.16B, v12.16B
+    mul x5, x8, x1
+    ushr v9.2D, v6.2D, #4
+    and v25.16B, v14.16B, v12.16B
+    ushr v14.2D, v8.2D, #4
     zip2 v6.4S, v30.4S, v31.4S
-    ushr v1.4S, v1.4S, #2
-    adc x19, xzr, xzr
-    extr x15, x16, x7, #60
-    and v31.16B, v3.16B, v15.16B
-    usra v9.2D, v0.2D, #30
-    ext v3.16B, v24.16B, v24.16B, #8
-    adds x12, x12, x21
-    umulh x21, x13, x22
-    and x15, x15, #0xfffffffffffffff
-    adcs x28, x19, x28
-    and v30.16B, v10.16B, v15.16B
-    umull2 v15.2D, v14.4S, v3.4S
-    dup v10.2D, x15
-    adc x19, xzr, xzr
-    uzp1 v0.4S, v0.4S, v9.4S
-    usra v12.2D, v9.2D, #30
-    mul x20, x13, x22
-    umlal v15.2D, v14.2S, v3.2S
+    zip1 v10.2D, v10.2D, v9.2D
+    zip1 v8.4S, v24.4S, v25.4S
+    zip2 v25.4S, v24.4S, v25.4S
+    zip1 v14.2D, v1.2D, v14.2D
+    ushr v1.2D, v10.2D, #30
+    orr v24.16B, v8.16B, v8.16B
+    umulh x15, x14, x1
     zip1 v9.4S, v30.4S, v31.4S
-    and v16.16B, v0.16B, v1.16B
-    zip2 v31.4S, v30.4S, v31.4S
-    orr v30.16B, v9.16B, v9.16B
-    mul x14, x23, x6
-    ext v0.16B, v25.16B, v25.16B, #8
-    umull v9.2D, v5.2S, v24.2S
-    adds x12, x12, x20
-    add v12.2D, v12.2D, v10.2D
-    adcs x28, x28, x21
-    zip1 v10.4S, v20.4S, v21.4S
-    umlal2 v15.2D, v2.4S, v0.4S
-    umulh x7, x23, x6
-    adc x19, x19, xzr
-    adds x14, x12, x14
-    umlal v15.2D, v2.2S, v0.2S
-    ext v3.16B, v24.16B, v24.16B, #8
-    umulh x20, x4, x10
-    mov x21, x14
-    umlal2 v9.2D, v14.4S, v24.4S
-    ext v0.16B, v25.16B, v25.16B, #8
-    umlal v9.2D, v14.2S, v25.2S
-    umlal2 v9.2D, v2.4S, v25.4S
-    extr x16, x21, x16, #56
-    mul x14, x4, x10
-    umlal v9.2D, v2.2S, v26.2S
-    usra v15.2D, v12.2D, #30
-    adcs x12, x28, x7
-    and x7, x16, #0xfffffffffffffff
-    adc x19, x19, xzr
-    mul x28, x13, x17
-    adds x15, x12, x14
-    usra v9.2D, v15.2D, #30
-    uzp1 v15.4S, v12.4S, v15.4S
-    umull2 v12.2D, v5.4S, v3.4S
-    adcs x19, x19, x20
-    umulh x20, x13, x17
-    and v17.16B, v15.16B, v1.16B
-    dup v15.2D, x7
-    umlal v12.2D, v5.2S, v3.2S
-    umlal2 v12.2D, v14.4S, v0.4S
-    add v9.2D, v9.2D, v15.2D
-    ext v3.16B, v24.16B, v24.16B, #8
-    adc x14, xzr, xzr
-    mul x12, x23, x22
-    umlal v12.2D, v14.2S, v0.2S
-    adds x28, x15, x28
-    ext v15.16B, v26.16B, v26.16B, #8
-    adcs x19, x19, x20
-    umull2 v0.2D, v13.4S, v3.4S
-    umlal2 v12.2D, v2.4S, v15.4S
-    umulh x16, x23, x22
-    adc x14, x14, xzr
-    umlal v12.2D, v2.2S, v15.2S
-    ext v15.16B, v25.16B, v25.16B, #8
-    umlal v0.2D, v13.2S, v3.2S
-    ext v3.16B, v27.16B, v27.16B, #8
-    umlal2 v0.2D, v5.4S, v15.4S
-    umlal v0.2D, v5.2S, v15.2S
-    ext v15.16B, v26.16B, v26.16B, #8
-    mul x20, x5, x6
-    usra v12.2D, v9.2D, #30
-    adds x7, x28, x12
-    umlal2 v0.2D, v14.4S, v15.4S
-    adcs x15, x19, x16
-    umlal v0.2D, v14.2S, v15.2S
-    umulh x12, x5, x6
-    adc x16, x14, xzr
-    umull v15.2D, v13.2S, v24.2S
-    uzp1 v9.4S, v9.4S, v12.4S
-    adds x14, x7, x20
-    umlal2 v0.2D, v2.4S, v3.4S
-    umulh x20, x4, x3
-    mov x7, x14
-    extr x19, x7, x21, #52
-    umlal2 v15.2D, v5.4S, v24.4S
-    and v18.16B, v9.16B, v1.16B
-    umlal v15.2D, v5.2S, v25.2S
-    umlal v0.2D, v2.2S, v3.2S
-    and x14, x19, #0xfffffffffffffff
-    adcs x19, x15, x12
-    umlal2 v15.2D, v14.4S, v25.4S
-    mul x12, x4, x3
-    dup v9.2D, x14
-    adc x28, x16, xzr
-    umlal v15.2D, v14.2S, v26.2S
-    umlal2 v15.2D, v2.4S, v26.4S
-    mul x14, x13, x10
-    umlal v15.2D, v2.2S, v27.2S
-    adds x12, x19, x12
-    adcs x28, x28, x20
-    umulh x21, x13, x10
-    adc x20, xzr, xzr
-    adds x14, x12, x14
-    usra v15.2D, v12.2D, #30
-    umull v3.2D, v4.2S, v24.2S
-    adcs x19, x28, x21
-    add v9.2D, v15.2D, v9.2D
-    umlal2 v3.2D, v13.4S, v24.4S
-    mul x16, x23, x17
-    adc x28, x20, xzr
-    ext v15.16B, v24.16B, v24.16B, #8
-    umlal v3.2D, v13.2S, v25.2S
-    usra v0.2D, v9.2D, #30
-    umlal2 v3.2D, v5.4S, v25.4S
-    umulh x15, x23, x17
-    umlal v3.2D, v5.2S, v26.2S
-    adds x12, x14, x16
-    umlal2 v3.2D, v14.4S, v26.4S
-    umlal v3.2D, v14.2S, v27.2S
-    uzp1 v12.4S, v9.4S, v0.4S
-    ext v9.16B, v28.16B, v28.16B, #8
-    umlal2 v3.2D, v2.4S, v27.4S
-    umulh x20, x5, x22
-    adcs x14, x19, x15
-    and v19.16B, v12.16B, v1.16B
-    umull2 v12.2D, v4.4S, v15.4S
-    adc x16, x28, xzr
-    umlal v3.2D, v2.2S, v28.2S
-    umlal v12.2D, v4.2S, v15.2S
-    mul x21, x5, x22
-    ext v15.16B, v27.16B, v27.16B, #8
-    usra v3.2D, v0.2D, #30
-    ext v0.16B, v25.16B, v25.16B, #8
-    mul x19, x26, x6
-    adds x15, x12, x21
-    umlal2 v12.2D, v13.4S, v0.4S
-    adcs x28, x14, x20
-    umlal v12.2D, v13.2S, v0.2S
-    ext v0.16B, v26.16B, v26.16B, #8
-    adc x12, x16, xzr
-    mul x16, x13, x3
-    umlal2 v12.2D, v5.4S, v0.4S
-    adds x19, x15, x19
-    umlal v12.2D, v5.2S, v0.2S
-    mov x19, x19
-    extr x7, x19, x7, #48
-    umlal2 v12.2D, v14.4S, v15.4S
-    umulh x14, x4, x8
-    umlal v12.2D, v14.2S, v15.2S
-    umlal2 v12.2D, v2.4S, v9.4S
-    and x15, x7, #0xfffffffffffffff
-    umlal v12.2D, v2.2S, v9.2S
-    dup v9.2D, x15
-    umull v0.2D, v11.2S, v24.2S
-    mul x21, x4, x8
-    add v15.2D, v3.2D, v9.2D
-    umlal2 v0.2D, v4.4S, v24.4S
-    umulh x20, x26, x6
-    umlal v0.2D, v4.2S, v25.2S
-    usra v12.2D, v15.2D, #30
-    uzp1 v9.4S, v15.4S, v12.4S
-    umulh x7, x23, x10
-    ext v15.16B, v24.16B, v24.16B, #8
-    umlal2 v0.2D, v13.4S, v25.4S
-    adcs x20, x28, x20
-    adc x28, x12, xzr
-    and v20.16B, v9.16B, v1.16B
-    umull2 v3.2D, v11.4S, v15.4S
-    adds x12, x20, x21
-    adcs x14, x28, x14
-    umlal v0.2D, v13.2S, v26.2S
-    ext v9.16B, v25.16B, v25.16B, #8
-    umlal2 v0.2D, v5.4S, v26.4S
-    umulh x21, x13, x3
-    umlal v3.2D, v11.2S, v15.2S
-    adc x28, xzr, xzr
-    ext v15.16B, v27.16B, v27.16B, #8
-    adds x16, x12, x16
-    umlal v0.2D, v5.2S, v27.2S
-    umlal2 v0.2D, v14.4S, v27.4S
-    umlal v0.2D, v14.2S, v28.2S
-    umulh x20, x26, x22
-    umlal2 v0.2D, v2.4S, v28.4S
-    adcs x14, x14, x21
-    umlal v0.2D, v2.2S, v29.2S
-    adc x12, x28, xzr
-    umlal2 v3.2D, v4.4S, v9.4S
-    umlal v3.2D, v4.2S, v9.2S
-    ext v9.16B, v26.16B, v26.16B, #8
-    mul x21, x23, x10
-    usra v0.2D, v12.2D, #30
-    ext v12.16B, v29.16B, v29.16B, #8
-    umlal2 v3.2D, v13.4S, v9.4S
-    umulh x15, x5, x17
-    umlal v3.2D, v13.2S, v9.2S
-    ext v9.16B, v28.16B, v28.16B, #8
-    adds x28, x16, x21
-    umlal2 v3.2D, v5.4S, v15.4S
-    adcs x21, x14, x7
-    umlal v3.2D, v5.2S, v15.2S
-    umlal2 v3.2D, v14.4S, v9.4S
-    adc x16, x12, xzr
-    mul x14, x5, x17
-    umlal v3.2D, v14.2S, v9.2S
-    umlal2 v3.2D, v2.4S, v12.4S
-    umlal v3.2D, v2.2S, v12.2S
-    mul x7, x26, x22
-    adds x28, x28, x14
-    adcs x21, x21, x15
-    mul x12, x11, x6
-    adc x16, x16, xzr
-    adds x7, x28, x7
-    adcs x28, x21, x20
-    umulh x20, x11, x6
-    adc x15, x16, xzr
-    ext v15.16B, v24.16B, v24.16B, #8
-    umull v9.2D, v7.2S, v24.2S
-    adds x16, x7, x12
-    umulh x21, x4, x9
-    mov x12, x16
-    adcs x28, x28, x20
-    adc x14, x15, xzr
-    extr x7, x12, x19, #44
-    umlal2 v9.2D, v11.4S, v24.4S
-    mul x19, x4, x9
-    umlal v9.2D, v11.2S, v25.2S
-    umlal2 v9.2D, v4.4S, v25.4S
-    umlal v9.2D, v4.2S, v26.2S
-    and x7, x7, #0xfffffffffffffff
-    mul x16, x13, x8
-    umlal2 v9.2D, v13.4S, v26.4S
-    dup v12.2D, x7
-    adds x7, x28, x19
-    umlal v9.2D, v13.2S, v27.2S
-    adcs x21, x14, x21
-    umlal2 v9.2D, v5.4S, v27.4S
-    adc x20, xzr, xzr
-    umulh x28, x13, x8
-    umlal v9.2D, v5.2S, v28.2S
-    adds x7, x7, x16
-    add v12.2D, v0.2D, v12.2D
-    umlal2 v9.2D, v14.4S, v28.4S
-    umlal v9.2D, v14.2S, v29.2S
-    umlal2 v9.2D, v2.4S, v29.4S
-    usra v3.2D, v12.2D, #30
-    mul x15, x23, x3
-    adcs x16, x21, x28
-    umlal v9.2D, v2.2S, v30.2S
-    adc x20, x20, xzr
-    ext v0.16B, v25.16B, v25.16B, #8
-    umulh x21, x23, x3
-    uzp1 v12.4S, v12.4S, v3.4S
-    adds x15, x7, x15
-    usra v9.2D, v3.2D, #30
-    umull2 v3.2D, v7.4S, v15.4S
-    and v21.16B, v12.16B, v1.16B
-    ext v12.16B, v26.16B, v26.16B, #8
-    mul x7, x5, x10
-    umlal v3.2D, v7.2S, v15.2S
-    adcs x21, x16, x21
-    ext v15.16B, v27.16B, v27.16B, #8
-    adc x14, x20, xzr
-    umlal2 v3.2D, v11.4S, v0.4S
-    umulh x20, x5, x10
-    umlal v3.2D, v11.2S, v0.2S
-    ext v0.16B, v28.16B, v28.16B, #8
-    adds x16, x15, x7
-    umlal2 v3.2D, v4.4S, v12.4S
-    umlal v3.2D, v4.2S, v12.2S
-    ext v12.16B, v29.16B, v29.16B, #8
-    umlal2 v3.2D, v13.4S, v15.4S
-    mul x7, x26, x17
-    adcs x28, x21, x20
-    umlal v3.2D, v13.2S, v15.2S
-    ext v15.16B, v30.16B, v30.16B, #8
-    adc x14, x14, xzr
-    umlal2 v3.2D, v5.4S, v0.4S
-    umlal v3.2D, v5.2S, v0.2S
-    umulh x21, x26, x17
-    umlal2 v3.2D, v14.4S, v12.4S
-    adds x19, x16, x7
-    umlal v3.2D, v14.2S, v12.2S
-    umlal2 v3.2D, v2.4S, v15.4S
-    umlal v3.2D, v2.2S, v15.2S
-    mul x15, x11, x22
-    adcs x28, x28, x21
-    adc x16, x14, xzr
-    umulh x14, x11, x22
-    adds x19, x19, x15
-    mul x20, x24, x6
-    adcs x15, x28, x14
-    adc x14, x16, xzr
-    umulh x21, x24, x6
-    adds x16, x19, x20
-    mov x28, x16
-    extr x7, x28, x12, #40
-    mul x20, x4, x25
-    umull v0.2D, v6.2S, v24.2S
-    adcs x16, x15, x21
-    and x12, x7, #0xfffffffffffffff
-    umulh x15, x4, x25
-    adc x14, x14, xzr
-    adds x20, x16, x20
-    dup v15.2D, x12
-    add v12.2D, v9.2D, v15.2D
-    mul x7, x23, x8
-    adc x21, x14, x15
-    usra v3.2D, v12.2D, #30
-    mul x19, x27, x6
-    ext v9.16B, v24.16B, v24.16B, #8
-    uzp1 v12.4S, v12.4S, v3.4S
-    umull2 v15.2D, v6.4S, v9.4S
-    umulh x4, x27, x6
-    adds x6, x20, x19
-    and v22.16B, v12.16B, v1.16B
-    umlal2 v0.2D, v7.4S, v24.4S
-    umlal v0.2D, v7.2S, v25.2S
-    ext v12.16B, v25.16B, v25.16B, #8
-    mul x20, x13, x9
-    umlal v15.2D, v6.2S, v9.2S
-    adc x19, x21, x4
-    umlal2 v15.2D, v7.4S, v12.4S
-    umlal v15.2D, v7.2S, v12.2S
-    umulh x16, x13, x9
-    umlal2 v0.2D, v11.4S, v25.4S
-    umlal v0.2D, v11.2S, v26.2S
-    adds x12, x6, x20
-    umulh x15, x26, x10
-    ext v12.16B, v26.16B, v26.16B, #8
-    umlal2 v0.2D, v4.4S, v26.4S
-    adcs x19, x19, x16
-    ext v9.16B, v27.16B, v27.16B, #8
-    umlal v0.2D, v4.2S, v27.2S
-    adc x14, xzr, xzr
-    adds x7, x12, x7
-    umlal2 v15.2D, v11.4S, v12.4S
-    umlal v15.2D, v11.2S, v12.2S
-    umulh x4, x23, x8
-    ext v12.16B, v28.16B, v28.16B, #8
-    umlal2 v0.2D, v13.4S, v27.4S
-    umlal v0.2D, v13.2S, v28.2S
-    umlal2 v0.2D, v5.4S, v28.4S
-    mul x12, x5, x3
-    umlal v0.2D, v5.2S, v29.2S
-    adcs x6, x19, x4
-    umlal2 v0.2D, v14.4S, v29.4S
-    adc x4, x14, xzr
-    umlal v0.2D, v14.2S, v30.2S
-    umulh x16, x5, x3
-    umlal2 v0.2D, v2.4S, v30.4S
-    adds x14, x7, x12
-    umlal v0.2D, v2.2S, v31.2S
-    umlal2 v15.2D, v4.4S, v9.4S
-    mul x19, x26, x10
-    adcs x7, x6, x16
-    usra v0.2D, v3.2D, #30
-    umlal v15.2D, v4.2S, v9.2S
-    ext v3.16B, v29.16B, v29.16B, #8
-    adc x20, x4, xzr
-    umlal2 v15.2D, v13.4S, v12.4S
-    ext v9.16B, v30.16B, v30.16B, #8
-    umlal v15.2D, v13.2S, v12.2S
-    mul x12, x11, x17
-    ext v12.16B, v31.16B, v31.16B, #8
-    umlal2 v15.2D, v5.4S, v3.4S
-    adds x4, x14, x19
-    umlal v15.2D, v5.2S, v3.2S
-    adcs x7, x7, x15
-    umlal2 v15.2D, v14.4S, v9.4S
-    adc x6, x20, xzr
-    umulh x15, x11, x17
-    umlal v15.2D, v14.2S, v9.2S
-    adds x16, x4, x12
-    umlal2 v15.2D, v2.4S, v12.4S
-    umlal v15.2D, v2.2S, v12.2S
-    mul x4, x24, x22
-    adcs x7, x7, x15
-    adc x15, x6, xzr
-    umulh x19, x24, x22
-    adds x14, x16, x4
-    mov x14, x14
-    mul x12, x13, x25
-    umull v3.2D, v8.2S, v24.2S
-    adcs x19, x7, x19
-    extr x28, x14, x28, #36
-    mov x21, #0x1b00000
-    adc x4, x15, xzr
-    adds x15, x19, #1
-    mul x7, x26, x3
-    umlal2 v3.2D, v6.4S, v24.4S
-    umlal v3.2D, v6.2S, v25.2S
-    and x19, x28, #0xfffffffffffffff
-    adc x28, x4, xzr
-    dup v9.2D, x19
-    umlal2 v3.2D, v7.4S, v25.4S
-    umlal v3.2D, v7.2S, v26.2S
-    umulh x4, x13, x25
-    umlal2 v3.2D, v11.4S, v26.4S
-    add v9.2D, v0.2D, v9.2D
-    umlal v3.2D, v11.2S, v27.2S
-    dup v0.4S, w21
-    umlal2 v3.2D, v4.4S, v27.4S
-    usra v15.2D, v9.2D, #30
-    umlal v3.2D, v4.2S, v28.2S
-    mul x20, x11, x10
-    umulh x21, x27, x22
+    ushr v8.2D, v14.2D, #30
+    trn1 v1.4S, v10.4S, v1.4S
+    ext v10.16B, v24.16B, v24.16B, #8
+    trn1 v14.4S, v14.4S, v8.4S
+    umull v8.2D, v0.2S, v24.2S
+    and v29.16B, v1.16B, v12.16B
+    mul x9, x8, x4
+    umull2 v1.2D, v0.4S, v10.4S
     adds x13, x15, x12
-    umlal2 v3.2D, v13.4S, v28.4S
-    adc x28, x28, x4
-    umulh x12, x23, x9
-    umlal v3.2D, v13.2S, v29.2S
-    uzp1 v12.4S, v9.4S, v15.4S
-    umlal2 v3.2D, v5.4S, v29.4S
-    umlal v3.2D, v5.2S, v30.2S
-    and v23.16B, v12.16B, v1.16B
-    mul x6, x27, x22
-    umlal2 v3.2D, v14.4S, v30.4S
-    ext v1.16B, v25.16B, v25.16B, #8
-    umlal v3.2D, v14.2S, v31.2S
-    umlal2 v3.2D, v2.4S, v31.4S
-    mul x19, x5, x8
-    umlal v3.2D, v2.2S, v10.2S
-    adds x15, x13, x6
-    umlal v3.2D, v16.2S, v0.2S
-    adc x28, x28, x21
-    mul x6, x23, x9
-    usra v3.2D, v15.2D, #30
-    ext v9.16B, v26.16B, v26.16B, #8
-    umulh x16, x26, x3
-    ext v15.16B, v24.16B, v24.16B, #8
-    adds x6, x15, x6
-    adcs x15, x28, x12
-    adc x28, xzr, xzr
-    adds x12, x6, x19
-    umulh x6, x5, x8
-    umulh x19, x11, x10
-    adcs x15, x15, x6
-    adc x28, x28, xzr
-    adds x6, x12, x7
-    adcs x16, x15, x16
-    adc x28, x28, xzr
-    adds x6, x6, x20
-    mul x15, x24, x17
-    adcs x12, x16, x19
-    adc x16, x28, xzr
-    umulh x7, x23, x25
-    adds x6, x6, x15
-    mov x28, x6
-    extr x6, x28, x14, #32
-    mul x13, x23, x25
-    and x15, x6, #0xfffffffffffffff
-    and x6, x15, #0x3fffffff
-    mul x21, x26, x8
-    dup v12.2D, x6
-    umulh x14, x27, x17
-    add v12.2D, v3.2D, v12.2D
-    umull v3.2D, v8.2S, v15.2S
-    ext v15.16B, v28.16B, v28.16B, #8
-    umlal2 v3.2D, v6.4S, v1.4S
-    umulh x19, x24, x17
-    umlal v3.2D, v6.2S, v1.2S
-    ext v1.16B, v27.16B, v27.16B, #8
-    umlal2 v3.2D, v7.4S, v9.4S
-    umulh x4, x26, x8
-    umlal v3.2D, v7.2S, v9.2S
-    ext v9.16B, v29.16B, v29.16B, #8
-    adcs x19, x12, x19
-    umlal2 v3.2D, v11.4S, v1.4S
-    adc x16, x16, xzr
-    adds x19, x19, x13
-    umlal v3.2D, v11.2S, v1.2S
-    adc x16, x16, x7
-    umlal2 v3.2D, v4.4S, v15.4S
-    mul x22, x5, x9
-    ext v1.16B, v10.16B, v10.16B, #8
-    umlal v3.2D, v4.2S, v15.2S
-    ext v15.16B, v30.16B, v30.16B, #8
-    umlal2 v3.2D, v13.4S, v9.4S
-    umlal v3.2D, v13.2S, v9.2S
-    ext v9.16B, v31.16B, v31.16B, #8
-    mul x20, x11, x3
-    umlal2 v3.2D, v5.4S, v15.4S
-    umlal v3.2D, v5.2S, v15.2S
-    umlal2 v3.2D, v14.4S, v9.4S
-    umlal v3.2D, v14.2S, v9.2S
-    mul x7, x24, x10
-    umull v15.2D, v8.2S, v25.2S
-    umlal2 v3.2D, v2.4S, v1.4S
-    dup v1.2D, x15
-    mul x12, x27, x17
-    umlal2 v3.2D, v16.4S, v0.4S
-    umulh x13, x5, x9
-    adds x19, x19, x12
-    ext v2.16B, v25.16B, v25.16B, #8
-    umlal2 v15.2D, v6.4S, v25.4S
-    adc x16, x16, x14
-    adds x17, x19, x22
-    ext v9.16B, v26.16B, v26.16B, #8
-    umlal v15.2D, v6.2S, v26.2S
-    umlal2 v15.2D, v7.4S, v26.4S
-    usra v3.2D, v1.2D, #30
-    umlal v15.2D, v7.2S, v27.2S
-    umulh x19, x11, x3
-    usra v3.2D, v12.2D, #30
-    umlal2 v15.2D, v11.4S, v27.4S
-    adcs x14, x16, x13
-    umlal v15.2D, v11.2S, v28.2S
-    adc x22, xzr, xzr
-    adds x12, x17, x21
-    ext v1.16B, v27.16B, v27.16B, #8
-    umlal2 v15.2D, v4.4S, v28.4S
-    adcs x4, x14, x4
-    umlal v15.2D, v4.2S, v29.2S
-    adc x14, x22, xzr
-    adds x17, x12, x20
-    umulh x13, x24, x10
-    sli v12.2D, v3.2D, #30
-    umlal2 v15.2D, v13.4S, v29.4S
-    adcs x19, x4, x19
-    umlal v15.2D, v13.2S, v30.2S
-    ushr v16.2D, v12.2D, #32
-    adc x14, x14, xzr
-    adds x15, x17, x7
-    umlal2 v15.2D, v5.4S, v30.4S
-    uzp1 v24.4S, v12.4S, v12.4S
-    mov x7, x15
-    mul x21, x5, x25
-    umlal v15.2D, v5.2S, v31.2S
-    adcs x19, x19, x13
-    ext v12.16B, v28.16B, v28.16B, #8
-    umlal2 v15.2D, v14.4S, v31.4S
-    adc x16, x14, xzr
-    extr x14, x7, x28, #28
-    umlal v15.2D, v14.2S, v10.2S
-    mul x12, x27, x10
-    umlal v15.2D, v17.2S, v0.2S
-    and x23, x14, #0xfffffffffffffff
-    mul x15, x26, x9
-    usra v15.2D, v3.2D, #30
-    dup v3.2D, x23
-    umulh x14, x5, x25
-    adds x19, x19, x21
-    add v3.2D, v15.2D, v3.2D
-    umull v15.2D, v8.2S, v2.2S
-    ext v2.16B, v29.16B, v29.16B, #8
-    mul x13, x24, x3
-    adc x14, x16, x14
-    umlal2 v15.2D, v6.4S, v9.4S
-    adds x22, x19, x12
-    umlal v15.2D, v6.2S, v9.2S
-    ext v9.16B, v30.16B, v30.16B, #8
-    umlal2 v15.2D, v7.4S, v1.4S
-    umulh x23, x27, x10
-    umlal v15.2D, v7.2S, v1.2S
-    ext v1.16B, v31.16B, v31.16B, #8
-    umlal2 v15.2D, v11.4S, v12.4S
-    umlal v15.2D, v11.2S, v12.2S
-    ext v12.16B, v10.16B, v10.16B, #8
-    umlal2 v15.2D, v4.4S, v2.4S
-    umulh x28, x26, x9
-    umlal v15.2D, v4.2S, v2.2S
-    ext v2.16B, v26.16B, v26.16B, #8
-    adc x19, x14, x23
-    adds x5, x22, x15
-    umlal2 v15.2D, v13.4S, v9.4S
-    umlal v15.2D, v13.2S, v9.2S
-    ext v9.16B, v27.16B, v27.16B, #8
-    umlal2 v15.2D, v5.4S, v1.4S
-    mul x14, x11, x8
-    umlal v15.2D, v5.2S, v1.2S
-    ext v1.16B, v28.16B, v28.16B, #8
-    adcs x6, x19, x28
-    umlal2 v15.2D, v14.4S, v12.4S
-    adc x4, xzr, xzr
-    umulh x12, x11, x8
-    adds x16, x5, x14
-    umull v12.2D, v8.2S, v26.2S
-    ext v14.16B, v29.16B, v29.16B, #8
-    umlal2 v15.2D, v17.4S, v0.4S
-    umull v2.2D, v8.2S, v2.2S
-    umlal2 v12.2D, v6.4S, v26.4S
-    umulh x20, x24, x3
-    umlal v12.2D, v6.2S, v27.2S
-    adcs x15, x6, x12
-    usra v15.2D, v3.2D, #30
-    umlal2 v12.2D, v7.4S, v27.4S
-    adc x17, x4, xzr
-    adds x22, x16, x13
-    umlal v12.2D, v7.2S, v28.2S
-    mov x28, x22
-    extr x5, x28, x7, #24
-    umlal2 v12.2D, v11.4S, v28.4S
-    mul x6, x26, x25
-    umlal v12.2D, v11.2S, v29.2S
-    adcs x13, x15, x20
-    sli v3.2D, v15.2D, #30
-    umlal2 v12.2D, v4.4S, v29.4S
-    and x10, x5, #0xfffffffffffffff
-    adc x14, x17, xzr
-    umlal v12.2D, v4.2S, v30.2S
-    umulh x26, x26, x25
-    ushr v17.2D, v3.2D, #36
-    adds x7, x13, x6
-    umlal2 v12.2D, v13.4S, v30.4S
-    sli v16.2D, v3.2D, #28
-    umlal v12.2D, v13.2S, v31.2S
-    dup v3.2D, x10
-    umlal2 v12.2D, v5.4S, v31.4S
-    umlal v12.2D, v5.2S, v10.2S
-    mul x10, x27, x3
-    umlal v12.2D, v18.2S, v0.2S
-    adc x19, x14, x26
-    umlal2 v2.2D, v6.4S, v9.4S
-    umlal v2.2D, v6.2S, v9.2S
-    ext v9.16B, v30.16B, v30.16B, #8
-    umulh x20, x27, x3
-    umlal2 v2.2D, v7.4S, v1.4S
-    adds x17, x7, x10
-    usra v12.2D, v15.2D, #30
-    umlal v2.2D, v7.2S, v1.2S
-    umlal2 v2.2D, v11.4S, v14.4S
-    ext v15.16B, v31.16B, v31.16B, #8
-    umlal v2.2D, v11.2S, v14.2S
-    ext v1.16B, v10.16B, v10.16B, #8
-    mul x6, x11, x9
-    umlal2 v2.2D, v4.4S, v9.4S
-    adc x20, x19, x20
+    and v31.16B, v14.16B, v12.16B
+    umull v14.2D, v5.2S, v24.2S
+    and v30.16B, v13.16B, v12.16B
+    adc x12, xzr, x26
+    adds x15, x13, x5
+    umlal v1.2D, v0.2S, v10.2S
+    mov x5, x15
+    mul x15, x14, x10
+    zip1 v13.4S, v26.4S, v27.4S
+    dup v12.2D, x23
+    zip2 v27.4S, v26.4S, v27.4S
+    umull v10.2D, v4.2S, v24.2S
+    extr x23, x5, x11, #60
+    umlal2 v14.2D, v0.4S, v24.4S
+    orr v26.16B, v13.16B, v13.16B
+    zip1 v13.4S, v30.4S, v31.4S
+    umlal v14.2D, v0.2S, v25.2S
+    umulh x26, x8, x1
+    add v12.2D, v8.2D, v12.2D
+    ext v8.16B, v24.16B, v24.16B, #8
+    zip2 v31.4S, v30.4S, v31.4S
+    orr v30.16B, v13.16B, v13.16B
+    and x19, x23, #0xfffffffffffffff
+    usra v1.2D, v12.2D, #30
+    umull2 v13.2D, v5.4S, v8.4S
+    umulh x11, x8, x4
+    umlal2 v10.2D, v5.4S, v24.4S
+    adcs x12, x12, x26
+    umlal v13.2D, v5.2S, v8.2S
+    ext v8.16B, v25.16B, v25.16B, #8
+    usra v14.2D, v1.2D, #30
+    uzp1 v12.4S, v12.4S, v1.4S
+    umulh x23, x14, x10
+    umlal2 v13.2D, v0.4S, v8.4S
+    adc x13, xzr, xzr
+    dup v1.2D, x19
+    umlal v13.2D, v0.2S, v8.2S
+    movi v8.16B, #255
+    adds x19, x12, x15
+    umlal v10.2D, v5.2S, v25.2S
+    umlal2 v10.2D, v0.4S, v25.4S
+    mul x12, x16, x1
+    add v14.2D, v14.2D, v1.2D
+    ushr v1.4S, v8.4S, #2
+    ext v8.16B, v24.16B, v24.16B, #8
+    usra v13.2D, v14.2D, #30
+    umlal v10.2D, v0.2S, v26.2S
+    and v16.16B, v12.16B, v1.16B
+    umull2 v12.2D, v4.4S, v8.4S
+    umulh x26, x16, x1
+    adcs x13, x13, x23
+    adc x23, xzr, xzr
+    adds x15, x19, x9
+    umlal v12.2D, v4.2S, v8.2S
+    usra v10.2D, v13.2D, #30
+    adcs x13, x13, x11
+    uzp1 v8.4S, v14.4S, v13.4S
+    ext v14.16B, v25.16B, v25.16B, #8
+    umulh x9, x14, x3
+    adc x19, x23, xzr
+    adds x23, x15, x12
+    zip1 v13.4S, v28.4S, v29.4S
+    and v17.16B, v8.16B, v1.16B
+    mul x12, x14, x3
+    mov x23, x23
+    extr x11, x23, x5, #56
+    ext v8.16B, v26.16B, v26.16B, #8
+    umlal2 v12.2D, v5.4S, v14.4S
+    adcs x26, x13, x26
+    umlal v12.2D, v5.2S, v14.2S
+    zip2 v29.4S, v28.4S, v29.4S
+    adc x15, x19, xzr
+    umlal2 v12.2D, v0.4S, v8.4S
+    orr v28.16B, v13.16B, v13.16B
+    umulh x13, x8, x10
+    and x19, x11, #0xfffffffffffffff
+    umlal v12.2D, v0.2S, v8.2S
+    adds x12, x26, x12
+    ext v8.16B, v24.16B, v24.16B, #8
+    dup v14.2D, x19
+    adcs x5, x15, x9
+    umull v13.2D, v11.2S, v24.2S
+    adc x26, xzr, xzr
+    mul x19, x8, x10
+    add v14.2D, v10.2D, v14.2D
+    zip1 v10.4S, v20.4S, v21.4S
+    umlal2 v13.2D, v4.4S, v24.4S
+    usra v12.2D, v14.2D, #30
+    mul x15, x16, x4
+    umlal v13.2D, v4.2S, v25.2S
+    adds x12, x12, x19
+    umlal2 v13.2D, v5.4S, v25.4S
+    adcs x11, x5, x13
+    umlal v13.2D, v5.2S, v26.2S
+    adc x19, x26, xzr
+    umulh x5, x16, x4
+    umlal2 v13.2D, v0.4S, v26.4S
+    uzp1 v14.4S, v14.4S, v12.4S
+    adds x13, x12, x15
+    umlal v13.2D, v0.2S, v27.2S
+    and v18.16B, v14.16B, v1.16B
+    ext v14.16B, v25.16B, v25.16B, #8
+    mul x9, x17, x1
+    adcs x5, x11, x5
+    usra v13.2D, v12.2D, #30
+    umull2 v12.2D, v11.4S, v8.4S
+    adc x15, x19, xzr
+    umulh x26, x17, x1
+    adds x9, x13, x9
+    umlal v12.2D, v11.2S, v8.2S
+    ext v8.16B, v26.16B, v26.16B, #8
+    mov x19, x9
+    extr x11, x19, x23, #52
+    umlal2 v12.2D, v4.4S, v14.4S
+    umlal v12.2D, v4.2S, v14.2S
     ext v14.16B, v27.16B, v27.16B, #8
-    umulh x16, x11, x9
-    umlal v2.2D, v4.2S, v9.2S
-    umlal2 v2.2D, v13.4S, v15.4S
-    ext v9.16B, v28.16B, v28.16B, #8
-    adds x6, x17, x6
-    umlal v2.2D, v13.2S, v15.2S
-    add v3.2D, v12.2D, v3.2D
-    umlal2 v2.2D, v5.4S, v1.4S
-    ext v5.16B, v29.16B, v29.16B, #8
-    umull v15.2D, v8.2S, v27.2S
-    umulh x17, x24, x8
-    adcs x3, x20, x16
-    umlal2 v2.2D, v18.4S, v0.4S
-    adc x12, xzr, xzr
-    umull v1.2D, v8.2S, v14.2S
-    ext v14.16B, v31.16B, v31.16B, #8
-    umlal2 v15.2D, v6.4S, v27.4S
-    mul x16, x24, x8
-    umlal v15.2D, v6.2S, v28.2S
-    ext v12.16B, v10.16B, v10.16B, #8
-    umlal2 v1.2D, v6.4S, v9.4S
-    umlal v1.2D, v6.2S, v9.2S
-    umlal2 v1.2D, v7.4S, v5.4S
-    ext v9.16B, v30.16B, v30.16B, #8
-    mul x15, x11, x25
-    umlal v1.2D, v7.2S, v5.2S
-    ext v5.16B, v31.16B, v31.16B, #8
-    umlal2 v15.2D, v7.4S, v28.4S
-    adds x16, x6, x16
-    umulh x13, x11, x25
-    mov x23, x16
-    extr x6, x23, x28, #20
-    usra v2.2D, v3.2D, #30
-    umlal v15.2D, v7.2S, v29.2S
-    adcs x19, x3, x17
-    umlal2 v15.2D, v11.4S, v29.4S
-    umlal v15.2D, v11.2S, v30.2S
-    adc x16, x12, xzr
-    adds x19, x19, x15
-    umulh x3, x27, x8
-    and x5, x6, #0xfffffffffffffff
-    umlal2 v15.2D, v4.4S, v30.4S
-    umlal v15.2D, v4.2S, v31.2S
-    sli v3.2D, v2.2D, #30
-    adc x15, x16, x13
-    umlal2 v15.2D, v13.4S, v31.4S
-    umlal v15.2D, v13.2S, v10.2S
-    sli v17.2D, v3.2D, #24
-    umlal v15.2D, v19.2S, v0.2S
-    mul x12, x27, x8
-    ushr v18.2D, v3.2D, #40
-    umlal2 v1.2D, v11.4S, v9.4S
-    umlal v1.2D, v11.2S, v9.2S
-    umlal2 v1.2D, v4.4S, v14.4S
-    mul x16, x24, x9
-    usra v15.2D, v2.2D, #30
-    umlal v1.2D, v4.2S, v14.2S
-    adds x28, x19, x12
-    ext v9.16B, v28.16B, v28.16B, #8
-    umull v3.2D, v8.2S, v28.2S
-    dup v14.2D, x5
-    adc x4, x15, x3
-    umlal2 v1.2D, v13.4S, v12.4S
+    mul x9, x14, x6
+    adcs x13, x5, x26
+    umlal2 v12.2D, v5.4S, v8.4S
+    and x5, x11, #0xfffffffffffffff
+    adc x11, x15, xzr
+    umlal v12.2D, v5.2S, v8.2S
+    dup v8.2D, x5
+    umlal2 v12.2D, v0.4S, v14.4S
+    umulh x26, x14, x6
+    umlal v12.2D, v0.2S, v14.2S
+    adds x5, x13, x9
+    ext v14.16B, v24.16B, v24.16B, #8
+    add v8.2D, v13.2D, v8.2D
+    umull v13.2D, v3.2S, v24.2S
+    mul x12, x8, x3
+    usra v12.2D, v8.2D, #30
+    adcs x23, x11, x26
+    umlal2 v13.2D, v11.4S, v24.4S
+    adc x13, xzr, xzr
+    umlal v13.2D, v11.2S, v25.2S
+    umulh x11, x8, x3
+    umlal2 v13.2D, v4.4S, v25.4S
+    adds x5, x5, x12
+    umlal v13.2D, v4.2S, v26.2S
+    uzp1 v8.4S, v8.4S, v12.4S
+    umlal2 v13.2D, v5.4S, v26.4S
+    and v19.16B, v8.16B, v1.16B
+    mul x12, x16, x10
+    adcs x26, x23, x11
+    umlal v13.2D, v5.2S, v27.2S
+    adc x23, x13, xzr
+    umlal2 v13.2D, v0.4S, v27.4S
+    umlal v13.2D, v0.2S, v28.2S
+    umulh x15, x16, x10
+    umull2 v8.2D, v3.4S, v14.4S
+    adds x11, x5, x12
+    usra v13.2D, v12.2D, #30
+    umlal v8.2D, v3.2S, v14.2S
+    mul x13, x17, x4
+    ext v14.16B, v25.16B, v25.16B, #8
+    ext v12.16B, v26.16B, v26.16B, #8
+    adcs x12, x26, x15
+    adc x23, x23, xzr
+    umlal2 v8.2D, v11.4S, v14.4S
+    umulh x5, x17, x4
+    umlal v8.2D, v11.2S, v14.2S
+    ext v14.16B, v27.16B, v27.16B, #8
+    adds x11, x11, x13
+    umlal2 v8.2D, v4.4S, v12.4S
+    umlal v8.2D, v4.2S, v12.2S
+    ext v12.16B, v28.16B, v28.16B, #8
+    umlal2 v8.2D, v5.4S, v14.4S
+    adcs x15, x12, x5
+    umlal v8.2D, v5.2S, v14.2S
+    mul x12, x25, x1
+    adc x5, x23, xzr
+    umlal2 v8.2D, v0.4S, v12.4S
+    umlal v8.2D, v0.2S, v12.2S
+    ext v12.16B, v24.16B, v24.16B, #8
+    umulh x9, x25, x1
+    adds x13, x11, x12
+    umull2 v14.2D, v2.4S, v12.4S
+    mov x23, x13
+    extr x26, x23, x19, #48
+    umlal v14.2D, v2.2S, v12.2S
+    mul x12, x14, x24
+    adcs x11, x15, x9
+    and x13, x26, #0xfffffffffffffff
+    adc x19, x5, xzr
+    dup v12.2D, x13
+    mul x26, x8, x6
+    adds x13, x11, x12
+    add v12.2D, v13.2D, v12.2D
+    ext v13.16B, v25.16B, v25.16B, #8
+    umulh x12, x14, x24
+    usra v8.2D, v12.2D, #30
+    umlal2 v14.2D, v3.4S, v13.4S
+    umlal v14.2D, v3.2S, v13.2S
+    ext v13.16B, v26.16B, v26.16B, #8
+    mul x11, x16, x3
+    adcs x12, x19, x12
+    uzp1 v12.4S, v12.4S, v8.4S
+    umlal2 v14.2D, v11.4S, v13.4S
+    adc x9, xzr, xzr
+    adds x19, x13, x26
+    umlal v14.2D, v11.2S, v13.2S
+    ext v13.16B, v27.16B, v27.16B, #8
+    and v20.16B, v12.16B, v1.16B
+    umull v12.2D, v2.2S, v24.2S
+    umulh x15, x8, x6
+    umlal2 v14.2D, v4.4S, v13.4S
+    umlal v14.2D, v4.2S, v13.2S
+    ext v13.16B, v28.16B, v28.16B, #8
+    umlal2 v12.2D, v3.4S, v24.4S
+    umlal v12.2D, v3.2S, v25.2S
+    umulh x13, x16, x3
+    umlal2 v12.2D, v11.4S, v25.4S
+    adcs x26, x12, x15
+    umlal v12.2D, v11.2S, v26.2S
+    adc x15, x9, xzr
+    adds x5, x19, x11
+    umlal2 v12.2D, v4.4S, v26.4S
+    umlal v12.2D, v4.2S, v27.2S
+    umulh x9, x25, x4
+    umlal2 v12.2D, v5.4S, v27.4S
+    adcs x26, x26, x13
+    umlal v12.2D, v5.2S, v28.2S
+    adc x12, x15, xzr
+    umlal2 v12.2D, v0.4S, v28.4S
+    umulh x13, x17, x10
+    umlal v12.2D, v0.2S, v29.2S
+    umlal2 v14.2D, v5.4S, v13.4S
+    umlal v14.2D, v5.2S, v13.2S
     ext v13.16B, v29.16B, v29.16B, #8
-    umulh x21, x24, x9
-    umlal2 v1.2D, v19.4S, v0.4S
-    ext v2.16B, v30.16B, v30.16B, #8
-    umlal2 v3.2D, v6.4S, v28.4S
-    adds x10, x28, x16
-    add v15.2D, v15.2D, v14.2D
-    umlal v3.2D, v6.2S, v29.2S
-    mov x13, x10
-    extr x26, x13, x23, #16
-    ext v14.16B, v10.16B, v10.16B, #8
-    umlal2 v3.2D, v7.4S, v29.4S
-    usra v1.2D, v15.2D, #30
-    umlal v3.2D, v7.2S, v30.2S
-    mul x12, x24, x25
-    adcs x28, x4, x21
-    umlal2 v3.2D, v11.4S, v30.4S
-    and x16, x26, #0xfffffffffffffff
-    adc x4, xzr, xzr
-    umlal v3.2D, v11.2S, v31.2S
-    umulh x26, x24, x25
-    sli v15.2D, v1.2D, #30
-    umlal2 v3.2D, v4.4S, v31.4S
-    dup v12.2D, x16
-    adds x19, x28, x12
-    sli v18.2D, v15.2D, #20
-    umull v9.2D, v8.2S, v9.2S
-    umlal v3.2D, v4.2S, v10.2S
-    ushr v19.2D, v15.2D, #44
-    umlal v3.2D, v20.2S, v0.2S
-    ext v15.16B, v29.16B, v29.16B, #8
-    mul x28, x27, x9
-    umlal2 v9.2D, v6.4S, v13.4S
-    adc x24, x4, x26
-    umlal v9.2D, v6.2S, v13.2S
-    umulh x5, x27, x9
-    umlal2 v9.2D, v7.4S, v2.4S
-    usra v3.2D, v1.2D, #30
-    umull v13.2D, v8.2S, v29.2S
-    adds x3, x19, x28
-    mov x20, x3
-    extr x16, x20, x13, #12
-    umlal v9.2D, v7.2S, v2.2S
-    ext v2.16B, v31.16B, v31.16B, #8
-    umlal2 v9.2D, v11.4S, v5.4S
-    mul x13, x27, x25
-    umlal v9.2D, v11.2S, v5.2S
-    add v5.2D, v3.2D, v12.2D
-    adc x24, x24, x5
-    umlal2 v9.2D, v4.4S, v14.4S
+    mul x15, x17, x10
+    usra v12.2D, v8.2D, #30
+    umlal2 v14.2D, v0.4S, v13.4S
+    umlal v14.2D, v0.2S, v13.2S
+    mul x19, x25, x4
+    adds x5, x5, x15
+    adcs x15, x26, x13
+    adc x26, x12, xzr
+    mul x11, x20, x1
+    adds x13, x5, x19
+    adcs x19, x15, x9
+    adc x26, x26, xzr
+    umulh x5, x20, x1
+    adds x9, x13, x11
+    mov x15, x9
+    extr x13, x15, x23, #44
+    mul x11, x14, x7
+    and x13, x13, #0xfffffffffffffff
+    adcs x5, x19, x5
+    dup v8.2D, x13
+    adc x19, x26, xzr
+    add v13.2D, v12.2D, v8.2D
+    umulh x12, x16, x6
+    umull v8.2D, v9.2S, v24.2S
+    adds x26, x5, x11
+    umlal2 v8.2D, v2.4S, v24.4S
+    umulh x11, x14, x7
+    usra v14.2D, v13.2D, #30
+    umlal v8.2D, v2.2S, v25.2S
+    umlal2 v8.2D, v3.4S, v25.4S
+    umlal v8.2D, v3.2S, v26.2S
+    mul x9, x8, x24
+    uzp1 v12.4S, v13.4S, v14.4S
+    umlal2 v8.2D, v11.4S, v26.4S
+    adcs x11, x19, x11
+    umlal v8.2D, v11.2S, v27.2S
+    adc x13, xzr, xzr
+    and v21.16B, v12.16B, v1.16B
+    umlal2 v8.2D, v4.4S, v27.4S
+    umulh x19, x8, x24
+    umlal v8.2D, v4.2S, v28.2S
+    adds x5, x26, x9
+    umlal2 v8.2D, v5.4S, v28.4S
+    umlal v8.2D, v5.2S, v29.2S
+    umlal2 v8.2D, v0.4S, v29.4S
+    ext v13.16B, v24.16B, v24.16B, #8
+    mul x9, x16, x6
+    ext v12.16B, v25.16B, v25.16B, #8
+    umlal v8.2D, v0.2S, v30.2S
+    adcs x23, x11, x19
+    mul x19, x17, x3
+    adc x13, x13, xzr
+    adds x26, x5, x9
+    adcs x12, x23, x12
+    umulh x9, x17, x3
+    adc x23, x13, xzr
+    usra v8.2D, v14.2D, #30
+    umull2 v14.2D, v9.4S, v13.4S
+    adds x19, x26, x19
+    umlal v14.2D, v9.2S, v13.2S
+    ext v13.16B, v26.16B, v26.16B, #8
+    mul x11, x25, x10
+    umlal2 v14.2D, v2.4S, v12.4S
+    adcs x26, x12, x9
+    umlal v14.2D, v2.2S, v12.2S
+    ext v12.16B, v27.16B, v27.16B, #8
+    adc x12, x23, xzr
+    umlal2 v14.2D, v3.4S, v13.4S
+    umulh x5, x25, x10
+    umlal v14.2D, v3.2S, v13.2S
+    adds x9, x19, x11
+    ext v13.16B, v28.16B, v28.16B, #8
+    umlal2 v14.2D, v11.4S, v12.4S
+    umlal v14.2D, v11.2S, v12.2S
+    ext v12.16B, v29.16B, v29.16B, #8
+    mul x19, x20, x4
+    umlal2 v14.2D, v4.4S, v13.4S
+    adcs x5, x26, x5
+    umlal v14.2D, v4.2S, v13.2S
+    ext v13.16B, v30.16B, v30.16B, #8
+    adc x23, x12, xzr
+    umlal2 v14.2D, v5.4S, v12.4S
+    umulh x26, x20, x4
+    umlal v14.2D, v5.2S, v12.2S
+    adds x13, x9, x19
+    umlal2 v14.2D, v0.4S, v13.4S
+    umlal v14.2D, v0.2S, v13.2S
+    umull v12.2D, v6.2S, v24.2S
+    mul x12, x22, x1
+    adcs x11, x5, x26
+    adc x5, x23, xzr
+    umlal2 v12.2D, v9.4S, v24.4S
+    umulh x23, x22, x1
+    adds x13, x13, x12
+    mov x13, x13
+    extr x26, x13, x15, #40
+    mul x9, x14, x2
+    and x26, x26, #0xfffffffffffffff
+    adcs x15, x11, x23
+    dup v13.2D, x26
+    adc x23, x5, xzr
+    adds x19, x15, x9
+    add v8.2D, v8.2D, v13.2D
+    umulh x15, x14, x2
+    umlal v12.2D, v9.2S, v25.2S
+    usra v14.2D, v8.2D, #30
+    umlal2 v12.2D, v2.4S, v25.4S
+    umlal v12.2D, v2.2S, v26.2S
+    umlal2 v12.2D, v3.4S, v26.4S
+    mul x14, x21, x1
+    adc x26, x23, x15
+    umlal v12.2D, v3.2S, v27.2S
+    uzp1 v8.4S, v8.4S, v14.4S
+    umlal2 v12.2D, v11.4S, v27.4S
+    umulh x12, x16, x24
+    adds x11, x19, x14
+    and v22.16B, v8.16B, v1.16B
+    umlal v12.2D, v11.2S, v28.2S
+    umlal2 v12.2D, v4.4S, v28.4S
+    umlal v12.2D, v4.2S, v29.2S
+    umlal2 v12.2D, v5.4S, v29.4S
+    umulh x23, x21, x1
+    umlal v12.2D, v5.2S, v30.2S
+    umlal2 v12.2D, v0.4S, v30.4S
+    umlal v12.2D, v0.2S, v31.2S
+    umulh x19, x8, x7
+    adc x14, x26, x23
+    usra v12.2D, v14.2D, #30
+    mul x15, x16, x24
+    ext v14.16B, v24.16B, v24.16B, #8
+    ext v13.16B, v25.16B, v25.16B, #8
+    umulh x9, x17, x6
+    mul x5, x8, x7
+    mul x26, x25, x3
+    adds x11, x11, x5
+    adcs x23, x14, x19
+    adc x19, xzr, xzr
+    umulh x14, x25, x3
+    adds x11, x11, x15
+    adcs x12, x23, x12
+    mul x5, x17, x6
+    umulh x15, x20, x10
+    adc x19, x19, xzr
+    adds x5, x11, x5
+    mul x23, x20, x10
+    adcs x9, x12, x9
+    adc x11, x19, xzr
+    adds x19, x5, x26
+    mul x12, x22, x4
+    adcs x14, x9, x14
+    adc x5, x11, xzr
+    adds x9, x19, x23
+    adcs x19, x14, x15
+    umulh x11, x22, x4
+    adc x5, x5, xzr
+    adds x23, x9, x12
+    mul x26, x21, x4
+    mov x23, x23
+    extr x9, x23, x13, #36
+    adcs x19, x19, x11
+    mul x12, x8, x2
+    adc x11, x5, xzr
+    adds x15, x19, #1
+    and x13, x9, #0xfffffffffffffff
+    adc x11, x11, xzr
+    dup v8.2D, x13
+    umulh x19, x8, x2
+    adds x5, x15, x12
+    add v8.2D, v12.2D, v8.2D
+    umull2 v12.2D, v6.4S, v14.4S
+    umulh x4, x21, x4
+    umlal v12.2D, v6.2S, v14.2S
+    ext v14.16B, v26.16B, v26.16B, #8
+    adc x13, x11, x19
+    adds x12, x5, x26
+    umlal2 v12.2D, v9.4S, v13.4S
+    umlal v12.2D, v9.2S, v13.2S
+    ext v13.16B, v27.16B, v27.16B, #8
+    umlal2 v12.2D, v2.4S, v14.4S
+    mul x11, x16, x7
+    umlal v12.2D, v2.2S, v14.2S
+    ext v14.16B, v28.16B, v28.16B, #8
+    adc x26, x13, x4
+    umlal2 v12.2D, v3.4S, v13.4S
+    umulh x9, x16, x7
+    adds x13, x12, x11
+    mov x8, #0x1b00000
+    umlal v12.2D, v3.2S, v13.2S
+    ext v13.16B, v29.16B, v29.16B, #8
+    dup v15.4S, w8
+    umlal2 v12.2D, v11.4S, v14.4S
+    umlal v12.2D, v11.2S, v14.2S
     ext v14.16B, v30.16B, v30.16B, #8
-    umlal2 v9.2D, v20.4S, v0.4S
-    ext v4.16B, v30.16B, v30.16B, #8
-    umulh x5, x27, x25
-    adds x17, x24, x13
-    umlal2 v13.2D, v6.4S, v29.4S
-    mov x25, x17
-    extr x24, x25, x20, #8
-    umull v1.2D, v8.2S, v15.2S
-    umlal v13.2D, v6.2S, v30.2S
-    lsr x13, x25, #4
-    usra v9.2D, v5.2D, #30
-    and x25, x16, #0xfffffffffffffff
-    umlal2 v13.2D, v7.4S, v30.4S
-    umlal v13.2D, v7.2S, v31.2S
-    adc x16, xzr, x5
-    and x11, x24, #0xfffffffffffffff
-    dup v3.2D, x11
-    umull v12.2D, v8.2S, v30.2S
-    umlal2 v13.2D, v11.4S, v31.4S
-    umlal v13.2D, v11.2S, v10.2S
-    sli v5.2D, v9.2D, #30
-    umlal v13.2D, v21.2S, v0.2S
-    sli v19.2D, v5.2D, #16
-    dup v15.2D, x25
-    umlal2 v1.2D, v6.4S, v4.4S
-    mov x16, x16
-    ushr v20.2D, v5.2D, #48
-    umlal v1.2D, v6.2S, v4.2S
-    ext v5.16B, v10.16B, v10.16B, #8
-    umlal2 v1.2D, v7.4S, v2.4S
-    dup v4.2D, x13
-    usra v13.2D, v9.2D, #30
-    umlal v1.2D, v7.2S, v2.2S
-    dup v9.2D, x16
-    umlal2 v1.2D, v11.4S, v5.4S
-    ext v2.16B, v31.16B, v31.16B, #8
-    umull v14.2D, v8.2S, v14.2S
-    ext v5.16B, v10.16B, v10.16B, #8
-    ext v11.16B, v31.16B, v31.16B, #8
-    umlal2 v1.2D, v21.4S, v0.4S
-    add v15.2D, v13.2D, v15.2D
-    umlal2 v12.2D, v6.4S, v30.4S
-    umlal v12.2D, v6.2S, v31.2S
+    umlal2 v12.2D, v4.4S, v13.4S
+    mul x8, x17, x24
+    umlal v12.2D, v4.2S, v13.2S
+    ext v13.16B, v31.16B, v31.16B, #8
+    adcs x4, x26, x9
+    umlal2 v12.2D, v5.4S, v14.4S
+    adc x5, xzr, xzr
+    umlal v12.2D, v5.2S, v14.2S
+    umulh x14, x17, x24
+    ext v14.16B, v24.16B, v24.16B, #8
+    umlal2 v12.2D, v0.4S, v13.4S
+    adds x13, x13, x8
+    umlal v12.2D, v0.2S, v13.2S
+    umull v13.2D, v7.2S, v24.2S
+    mul x8, x25, x6
+    umull v14.2D, v7.2S, v14.2S
+    adcs x4, x4, x14
+    usra v12.2D, v8.2D, #30
+    adc x5, x5, xzr
+    umlal2 v13.2D, v6.4S, v24.4S
+    umulh x14, x25, x6
+    umlal v13.2D, v6.2S, v25.2S
+    adds x13, x13, x8
+    umlal2 v13.2D, v9.4S, v25.4S
+    umlal v13.2D, v9.2S, v26.2S
+    uzp1 v8.4S, v8.4S, v12.4S
+    umulh x12, x20, x3
+    umlal2 v13.2D, v2.4S, v26.4S
+    umlal v13.2D, v2.2S, v27.2S
+    adcs x4, x4, x14
+    and v23.16B, v8.16B, v1.16B
+    umlal2 v13.2D, v3.4S, v27.4S
+    adc x5, x5, xzr
+    umlal v13.2D, v3.2S, v28.2S
+    umlal2 v13.2D, v11.4S, v28.4S
+    mul x8, x20, x3
+    umlal v13.2D, v11.2S, v29.2S
+    umlal2 v13.2D, v4.4S, v29.4S
+    umlal v13.2D, v4.2S, v30.2S
+    mul x15, x22, x10
+    ext v8.16B, v25.16B, v25.16B, #8
+    umlal2 v13.2D, v5.4S, v30.4S
+    adds x13, x13, x8
+    ext v1.16B, v26.16B, v26.16B, #8
+    umlal v13.2D, v5.2S, v31.2S
+    adcs x12, x4, x12
+    umulh x14, x22, x10
+    umlal2 v13.2D, v0.4S, v31.4S
+    adc x8, x5, xzr
+    adds x26, x13, x15
+    umlal2 v14.2D, v6.4S, v8.4S
+    mov x9, x26
+    extr x5, x9, x23, #32
+    umlal v14.2D, v6.2S, v8.2S
+    ext v8.16B, v27.16B, v27.16B, #8
+    umlal2 v14.2D, v9.4S, v1.4S
+    mul x19, x16, x2
+    umlal v14.2D, v9.2S, v1.2S
+    ext v1.16B, v29.16B, v29.16B, #8
+    and x5, x5, #0xfffffffffffffff
+    adcs x14, x12, x14
+    umlal2 v14.2D, v2.4S, v8.4S
+    and x15, x5, #0x3fffffff
+    adc x26, x8, xzr
+    umlal v14.2D, v2.2S, v8.2S
+    ext v8.16B, v28.16B, v28.16B, #8
+    umulh x13, x16, x2
+    umlal v13.2D, v0.2S, v10.2S
+    adds x16, x14, x19
+    umlal2 v14.2D, v3.4S, v8.4S
+    umlal v13.2D, v16.2S, v15.2S
+    umlal v14.2D, v3.2S, v8.2S
+    ext v8.16B, v30.16B, v30.16B, #8
+    mul x8, x21, x10
+    adc x19, x26, x13
+    umlal2 v14.2D, v11.4S, v1.4S
+    usra v13.2D, v12.2D, #30
+    dup v12.2D, x5
+    umlal v14.2D, v11.2S, v1.2S
+    ext v1.16B, v31.16B, v31.16B, #8
+    umlal2 v14.2D, v4.4S, v8.4S
+    umulh x5, x21, x10
+    umlal v14.2D, v4.2S, v8.2S
+    ext v8.16B, v10.16B, v10.16B, #8
+    adds x12, x16, x8
+    umlal2 v14.2D, v5.4S, v1.4S
+    umlal v14.2D, v5.2S, v1.2S
+    dup v1.2D, x15
+    umlal2 v14.2D, v0.4S, v8.4S
+    mul x4, x17, x7
+    ext v8.16B, v25.16B, v25.16B, #8
+    umlal2 v14.2D, v16.4S, v15.4S
+    adc x19, x19, x5
+    add v1.2D, v13.2D, v1.2D
+    umull v0.2D, v7.2S, v25.2S
+    umulh x14, x17, x7
+    ext v13.16B, v26.16B, v26.16B, #8
+    adds x26, x12, x4
+    usra v14.2D, v12.2D, #30
+    umlal2 v0.2D, v6.4S, v25.4S
+    mul x16, x25, x24
+    usra v14.2D, v1.2D, #30
+    umlal v0.2D, v6.2S, v26.2S
+    adcs x19, x19, x14
+    umlal2 v0.2D, v9.4S, v26.4S
+    adc x8, xzr, xzr
+    umlal v0.2D, v9.2S, v27.2S
+    umlal2 v0.2D, v2.4S, v27.4S
+    adds x12, x26, x16
+    mul x26, x20, x6
+    sli v1.2D, v14.2D, #30
+    umlal v0.2D, v2.2S, v28.2S
+    umlal2 v0.2D, v3.4S, v28.4S
+    uzp1 v24.4S, v1.4S, v1.4S
+    umlal v0.2D, v3.2S, v29.2S
+    mul x13, x22, x3
+    umlal2 v0.2D, v11.4S, v29.4S
+    ushr v16.2D, v1.2D, #32
+    umlal v0.2D, v11.2S, v30.2S
+    umlal2 v0.2D, v4.4S, v30.4S
+    umulh x23, x25, x24
+    umlal v0.2D, v4.2S, v31.2S
+    ext v1.16B, v27.16B, v27.16B, #8
+    umlal2 v0.2D, v5.4S, v31.4S
+    umull v12.2D, v7.2S, v8.2S
+    umulh x16, x20, x6
+    umlal v0.2D, v5.2S, v10.2S
+    adcs x14, x19, x23
+    ext v8.16B, v10.16B, v10.16B, #8
+    umlal v0.2D, v17.2S, v15.2S
+    adc x19, x8, xzr
+    adds x11, x12, x26
+    umlal2 v12.2D, v6.4S, v13.4S
+    umlal v12.2D, v6.2S, v13.2S
+    ext v13.16B, v28.16B, v28.16B, #8
+    umulh x26, x22, x3
+    umlal2 v12.2D, v9.4S, v1.4S
+    adcs x23, x14, x16
+    usra v0.2D, v14.2D, #30
+    umlal v12.2D, v9.2S, v1.2S
+    adc x16, x19, xzr
+    adds x11, x11, x13
+    ext v14.16B, v29.16B, v29.16B, #8
+    umlal2 v12.2D, v2.4S, v13.4S
+    mov x13, x11
+    extr x8, x13, x9, #28
+    umlal v12.2D, v2.2S, v13.2S
+    ext v1.16B, v30.16B, v30.16B, #8
+    umlal2 v12.2D, v3.4S, v14.4S
+    mul x14, x17, x2
+    ext v13.16B, v31.16B, v31.16B, #8
+    adcs x26, x23, x26
+    umlal v12.2D, v3.2S, v14.2S
+    and x12, x8, #0xfffffffffffffff
+    adc x8, x16, xzr
+    umlal2 v12.2D, v11.4S, v1.4S
+    umulh x17, x17, x2
+    umlal v12.2D, v11.2S, v1.2S
+    dup v14.2D, x12
+    adds x16, x26, x14
+    umlal2 v12.2D, v4.4S, v13.4S
+    umlal v12.2D, v4.2S, v13.2S
+    ext v13.16B, v28.16B, v28.16B, #8
+    add v1.2D, v0.2D, v14.2D
+    umlal2 v12.2D, v5.4S, v8.4S
+    mul x14, x21, x3
+    adc x8, x8, x17
+    umlal2 v12.2D, v17.4S, v15.4S
+    ext v8.16B, v29.16B, v29.16B, #8
+    ext v14.16B, v26.16B, v26.16B, #8
+    umull v5.2D, v7.2S, v26.2S
+    umulh x5, x21, x3
+    umull v0.2D, v7.2S, v14.2S
+    adds x14, x16, x14
+    umlal2 v5.2D, v6.4S, v26.4S
+    usra v12.2D, v1.2D, #30
+    umlal v5.2D, v6.2S, v27.2S
+    umlal2 v5.2D, v9.4S, v27.4S
+    mul x16, x25, x7
+    umlal v5.2D, v9.2S, v28.2S
+    adc x5, x8, x5
+    umlal2 v5.2D, v2.4S, v28.4S
+    sli v1.2D, v12.2D, #30
+    umulh x8, x25, x7
+    umlal v5.2D, v2.2S, v29.2S
+    ext v14.16B, v30.16B, v30.16B, #8
+    adds x12, x14, x16
+    ushr v17.2D, v1.2D, #36
+    umlal2 v5.2D, v3.4S, v29.4S
+    umlal v5.2D, v3.2S, v30.2S
+    sli v16.2D, v1.2D, #28
+    umlal2 v5.2D, v11.4S, v30.4S
+    ext v1.16B, v31.16B, v31.16B, #8
+    umulh x26, x20, x24
+    umlal v5.2D, v11.2S, v31.2S
+    adcs x16, x5, x8
+    umlal2 v5.2D, v4.4S, v31.4S
+    adc x5, xzr, xzr
+    umlal v5.2D, v4.2S, v10.2S
+    umlal v5.2D, v18.2S, v15.2S
+    umulh x8, x22, x6
+    usra v5.2D, v12.2D, #30
+    mul x9, x25, x2
+    ext v12.16B, v27.16B, v27.16B, #8
+    umlal2 v0.2D, v6.4S, v12.4S
+    mul x3, x22, x24
+    umlal v0.2D, v6.2S, v12.2S
+    umlal2 v0.2D, v9.4S, v13.4S
+    mul x17, x20, x24
+    umlal v0.2D, v9.2S, v13.2S
+    ext v12.16B, v27.16B, v27.16B, #8
+    umlal2 v0.2D, v2.4S, v8.4S
+    umlal v0.2D, v2.2S, v8.2S
+    mul x14, x22, x6
+    ext v13.16B, v28.16B, v28.16B, #8
+    umlal2 v0.2D, v3.4S, v14.4S
+    adds x19, x12, x17
+    ext v8.16B, v10.16B, v10.16B, #8
+    umlal v0.2D, v3.2S, v14.2S
+    adcs x10, x16, x26
+    ext v14.16B, v29.16B, v29.16B, #8
+    umlal2 v0.2D, v11.4S, v1.4S
+    adc x12, x5, xzr
+    umulh x16, x25, x2
+    umlal v0.2D, v11.2S, v1.2S
+    adds x14, x19, x14
+    umlal2 v0.2D, v4.4S, v8.4S
+    adcs x26, x10, x8
+    mov x5, x14
+    umlal2 v0.2D, v18.4S, v15.4S
+    adc x4, x12, xzr
+    extr x11, x5, x13, #24
+    adds x25, x26, x9
+    umull v8.2D, v7.2S, v27.2S
+    umulh x23, x21, x6
+    adc x16, x4, x16
+    umull v1.2D, v7.2S, v12.2S
+    and x11, x11, #0xfffffffffffffff
+    umlal2 v8.2D, v6.4S, v27.4S
+    dup v4.2D, x11
+    ext v12.16B, v30.16B, v30.16B, #8
+    umlal v8.2D, v6.2S, v28.2S
+    umlal2 v8.2D, v9.4S, v28.4S
+    mul x13, x21, x6
+    umlal v8.2D, v9.2S, v29.2S
+    add v5.2D, v5.2D, v4.2D
+    umlal2 v8.2D, v2.4S, v29.4S
+    ext v4.16B, v31.16B, v31.16B, #8
+    umlal v8.2D, v2.2S, v30.2S
+    usra v0.2D, v5.2D, #30
+    mul x11, x20, x7
+    umlal2 v8.2D, v3.4S, v30.4S
+    umlal v8.2D, v3.2S, v31.2S
+    adds x4, x25, x13
+    umlal2 v8.2D, v11.4S, v31.4S
+    adc x15, x16, x23
+    umulh x16, x20, x7
+    umlal v8.2D, v11.2S, v10.2S
+    sli v5.2D, v0.2D, #30
+    adds x6, x4, x11
+    umlal v8.2D, v19.2S, v15.2S
+    umlal2 v1.2D, v6.4S, v13.4S
+    sli v17.2D, v5.2D, #24
+    umulh x23, x22, x24
+    umlal v1.2D, v6.2S, v13.2S
+    ushr v18.2D, v5.2D, #40
+    adcs x8, x15, x16
+    umlal2 v1.2D, v9.4S, v14.4S
+    usra v8.2D, v0.2D, #30
+    adc x15, xzr, xzr
+    adds x6, x6, x3
+    umlal v1.2D, v9.2S, v14.2S
+    mov x3, x6
+    extr x14, x3, x5, #20
+    umlal2 v1.2D, v2.4S, v12.4S
+    umulh x12, x21, x24
+    umlal v1.2D, v2.2S, v12.2S
+    adcs x4, x8, x23
+    umlal2 v1.2D, v3.4S, v4.4S
+    adc x23, x15, xzr
+    and x6, x14, #0xfffffffffffffff
+    umlal v1.2D, v3.2S, v4.2S
     ext v13.16B, v10.16B, v10.16B, #8
-    umlal2 v12.2D, v7.4S, v31.4S
-    umlal v12.2D, v7.2S, v10.2S
-    usra v1.2D, v15.2D, #30
-    umlal v12.2D, v22.2S, v0.2S
-    umlal2 v14.2D, v6.4S, v2.4S
-    umlal v14.2D, v6.2S, v2.2S
-    umull v2.2D, v8.2S, v31.2S
-    sli v15.2D, v1.2D, #30
-    usra v12.2D, v1.2D, #30
-    umlal2 v14.2D, v7.4S, v13.4S
-    ushr v21.2D, v15.2D, #52
-    umlal2 v14.2D, v22.4S, v0.4S
-    sli v20.2D, v15.2D, #12
-    umlal2 v2.2D, v6.4S, v31.4S
-    umlal v2.2D, v6.2S, v10.2S
-    umull v1.2D, v8.2S, v11.2S
-    add v11.2D, v12.2D, v3.2D
-    umlal v2.2D, v23.2S, v0.2S
-    umull v12.2D, v8.2S, v10.2S
-    usra v14.2D, v11.2D, #30
+    dup v12.2D, x6
+    umull v14.2D, v7.2S, v28.2S
+    mul x17, x22, x7
+    umlal2 v1.2D, v11.4S, v13.4S
+    ext v13.16B, v28.16B, v28.16B, #8
+    umlal2 v1.2D, v19.4S, v15.4S
+    add v12.2D, v8.2D, v12.2D
+    mul x16, x20, x2
+    ext v4.16B, v30.16B, v30.16B, #8
+    umlal2 v14.2D, v6.4S, v28.4S
+    umlal v14.2D, v6.2S, v29.2S
+    ext v0.16B, v29.16B, v29.16B, #8
+    umlal2 v14.2D, v9.4S, v29.4S
+    umulh x8, x20, x2
+    ext v8.16B, v31.16B, v31.16B, #8
+    usra v1.2D, v12.2D, #30
+    umlal v14.2D, v9.2S, v30.2S
+    adds x4, x4, x16
+    umlal2 v14.2D, v2.4S, v30.4S
+    ext v5.16B, v10.16B, v10.16B, #8
+    umlal v14.2D, v2.2S, v31.2S
+    umlal2 v14.2D, v3.4S, v31.4S
+    mul x20, x21, x24
+    sli v12.2D, v1.2D, #30
+    umlal v14.2D, v3.2S, v10.2S
+    adc x10, x23, x8
+    umull v11.2D, v7.2S, v13.2S
+    ushr v19.2D, v12.2D, #44
+    umulh x25, x22, x7
+    umlal v14.2D, v20.2S, v15.2S
+    sli v18.2D, v12.2D, #20
+    adds x20, x4, x20
+    umull v12.2D, v7.2S, v29.2S
+    umlal2 v11.2D, v6.4S, v0.4S
+    adc x12, x10, x12
+    usra v14.2D, v1.2D, #30
+    umlal v11.2D, v6.2S, v0.2S
+    adds x4, x20, x17
+    umlal2 v11.2D, v9.4S, v4.4S
+    mov x17, x4
+    umlal v11.2D, v9.2S, v4.2S
+    umulh x13, x22, x2
+    umlal2 v12.2D, v6.4S, v29.4S
+    extr x14, x17, x3, #16
+    umlal v12.2D, v6.2S, v30.2S
+    adcs x3, x12, x25
+    umlal2 v11.2D, v2.4S, v8.4S
+    adc x10, xzr, xzr
+    umlal v11.2D, v2.2S, v8.2S
+    umlal2 v11.2D, v3.4S, v5.4S
+    ext v1.16B, v29.16B, v29.16B, #8
+    mul x22, x22, x2
+    and x12, x14, #0xfffffffffffffff
+    dup v3.2D, x12
+    umlal2 v12.2D, v9.4S, v30.4S
+    ext v8.16B, v31.16B, v31.16B, #8
+    umlal v12.2D, v9.2S, v31.2S
+    ext v0.16B, v10.16B, v10.16B, #8
+    mul x8, x21, x7
+    umlal2 v11.2D, v20.4S, v15.4S
+    adds x16, x3, x22
+    add v13.2D, v14.2D, v3.2D
+    umulh x3, x21, x7
+    umlal2 v12.2D, v2.4S, v31.4S
+    adc x20, x10, x13
+    ext v5.16B, v30.16B, v30.16B, #8
+    umull v1.2D, v7.2S, v1.2S
+    adds x16, x16, x8
+    umlal v12.2D, v2.2S, v10.2S
+    usra v11.2D, v13.2D, #30
+    mov x14, x16
+    extr x17, x14, x17, #12
+    ext v14.16B, v30.16B, v30.16B, #8
+    umlal v12.2D, v21.2S, v15.2S
+    ext v3.16B, v31.16B, v31.16B, #8
     umlal2 v1.2D, v6.4S, v5.4S
-    umlal2 v1.2D, v23.4S, v0.4S
-    usra v2.2D, v14.2D, #30
-    sli v11.2D, v14.2D, #30
-    sli v21.2D, v11.2D, #8
-    add v14.2D, v2.2D, v4.2D
-    ushr v22.2D, v11.2D, #56
-    usra v1.2D, v14.2D, #30
-    usra v12.2D, v1.2D, #30
-    sli v14.2D, v1.2D, #30
-    sli v22.2D, v14.2D, #4
-    add v3.2D, v12.2D, v9.2D
-    orr v23.16B, v3.16B, v3.16B
-    movi v3.4S, #27
-    umov x4, v17.d[0]
-    umull v3.2D, v24.2S, v3.2S
-    umov x23, v19.d[0]
-    umov x13, v16.d[0]
-    umov x5, v21.d[0]
-    shl v9.2D, v3.2D, #20
-    umov x24, v22.d[0]
-    mov x27, #0x1b0000000000000
-    add v23.2D, v23.2D, v9.2D
-    umov x20, v23.d[0]
-    umov x11, v20.d[0]
-    umov x14, v18.d[0]
-    cmp x20, x27
-    csel x27, x27, xzr, cs
-    sbcs x13, x13, xzr
-    sbcs x8, x4, xzr
-    sbcs x12, x14, xzr
-    sbcs x16, x23, xzr
-    sbcs x9, x11, xzr
-    stp x13, x8, [x0, #0]
-    sbcs x5, x5, xzr
-    stp x12, x16, [x0, #16]
-    sbcs x13, x24, xzr
-    stp x9, x5, [x0, #32]
-    umov x24, v16.d[1]
-    sbc x20, x20, xzr
-    umov x10, v18.d[1]
-    sub x14, x20, x27
-    stp x13, x14, [x0, #48]
-    umov x5, v20.d[1]
-    umov x6, v22.d[1]
-    mov x25, #0x1b0000000000000
-    umov x20, v23.d[1]
-    cmp x20, x25
-    umov x14, v17.d[1]
-    csel x27, x25, xzr, cs
-    sbcs x26, x24, xzr
-    umov x12, v19.d[1]
-    sbcs x21, x14, xzr
-    umov x16, v21.d[1]
-    sbcs x14, x10, xzr
-    sbcs x22, x12, xzr
-    sbcs x3, x5, xzr
-    stp x26, x21, [x0, #64]
-    sbcs x12, x16, xzr
-    stp x14, x22, [x0, #80]
-    sbcs x6, x6, xzr
-    stp x3, x12, [x0, #96]
-    sbc x12, x20, xzr
-    sub x14, x12, x27
-    stp x6, x14, [x0, #112]
-    ldp d14, d15, [sp, #128]
-    ldp d12, d13, [sp, #112]
-    ldp d10, d11, [sp, #96]
-    ldp d8, d9, [sp, #80]
-    ldp x27, x28, [sp, #64]
+    mul x8, x21, x2
+    umlal v1.2D, v6.2S, v5.2S
+    adc x16, x20, x3
+    and x17, x17, #0xfffffffffffffff
+    ext v5.16B, v10.16B, v10.16B, #8
+    umlal2 v1.2D, v9.4S, v8.4S
+    sli v13.2D, v11.2D, #30
+    dup v4.2D, x17
+    umulh x17, x21, x2
+    usra v12.2D, v11.2D, #30
+    umlal v1.2D, v9.2S, v8.2S
+    adds x20, x16, x8
+    umlal2 v1.2D, v2.4S, v0.4S
+    sli v19.2D, v13.2D, #16
+    umull v8.2D, v7.2S, v30.2S
+    ushr v20.2D, v13.2D, #48
+    mov x8, x20
+    extr x21, x8, x14, #8
+    umlal2 v1.2D, v21.4S, v15.4S
+    lsr x20, x8, #4
+    ext v2.16B, v31.16B, v31.16B, #8
+    adc x14, xzr, x17
+    add v11.2D, v12.2D, v4.2D
+    umull v12.2D, v7.2S, v14.2S
+    dup v14.2D, x20
+    mov x22, x14
+    umlal2 v8.2D, v6.4S, v30.4S
+    ext v13.16B, v10.16B, v10.16B, #8
+    and x14, x21, #0xfffffffffffffff
+    dup v4.2D, x22
+    umlal v8.2D, v6.2S, v31.2S
+    dup v0.2D, x14
+    umlal2 v8.2D, v9.4S, v31.4S
+    usra v1.2D, v11.2D, #30
+    umlal v8.2D, v9.2S, v10.2S
+    umlal v8.2D, v22.2S, v15.2S
+    umlal2 v12.2D, v6.4S, v3.4S
+    umlal v12.2D, v6.2S, v3.2S
+    sli v11.2D, v1.2D, #30
+    umull v3.2D, v7.2S, v31.2S
+    usra v8.2D, v1.2D, #30
+    umlal2 v12.2D, v9.4S, v5.4S
+    ushr v21.2D, v11.2D, #52
+    umlal2 v12.2D, v22.4S, v15.4S
+    sli v20.2D, v11.2D, #12
+    umull v1.2D, v7.2S, v2.2S
+    umlal2 v3.2D, v6.4S, v31.4S
+    add v5.2D, v8.2D, v0.2D
+    umlal v3.2D, v6.2S, v10.2S
+    umlal v3.2D, v23.2S, v15.2S
+    usra v12.2D, v5.2D, #30
+    umlal2 v1.2D, v6.4S, v13.4S
+    umlal2 v1.2D, v23.4S, v15.4S
+    umull v9.2D, v7.2S, v10.2S
+    usra v3.2D, v12.2D, #30
+    sli v5.2D, v12.2D, #30
+    sli v21.2D, v5.2D, #8
+    ushr v22.2D, v5.2D, #56
+    add v11.2D, v3.2D, v14.2D
+    usra v1.2D, v11.2D, #30
+    usra v9.2D, v1.2D, #30
+    sli v11.2D, v1.2D, #30
+    sli v22.2D, v11.2D, #4
+    add v14.2D, v9.2D, v4.2D
+    orr v23.16B, v14.16B, v14.16B
+    umlal v23.2D, v24.2S, v15.2S
+    umov x16, v16.d[0]
+    umov x20, v20.d[0]
+    umov x21, v21.d[0]
+    umov x14, v19.d[0]
+    umov x4, v23.d[0]
+    mov x10, #0x1b0000000000000
+    cmp x4, x10
+    umov x15, v17.d[0]
+    csel x10, x10, xzr, cs
+    sbcs x22, x16, xzr
+    umov x19, v18.d[0]
+    sbcs x25, x15, xzr
+    umov x15, v22.d[0]
+    sbcs x17, x19, xzr
+    sbcs x3, x14, xzr
+    sbcs x8, x20, xzr
+    sbcs x19, x21, xzr
+    stp x22, x25, [x0, #0]
+    sbcs x15, x15, xzr
+    stp x17, x3, [x0, #16]
+    sbc x4, x4, xzr
+    stp x8, x19, [x0, #32]
+    sub x19, x4, x10
+    umov x21, v17.d[1]
+    stp x15, x19, [x0, #48]
+    umov x4, v19.d[1]
+    umov x24, v21.d[1]
+    umov x20, v22.d[1]
+    umov x7, v23.d[1]
+    mov x14, #0x1b0000000000000
+    umov x15, v16.d[1]
+    cmp x7, x14
+    csel x14, x14, xzr, cs
+    sbcs x8, x15, xzr
+    umov x15, v18.d[1]
+    sbcs x17, x21, xzr
+    umov x19, v20.d[1]
+    sbcs x6, x15, xzr
+    sbcs x25, x4, xzr
+    sbcs x16, x19, xzr
+    stp x8, x17, [x0, #64]
+    sbcs x15, x24, xzr
+    stp x6, x25, [x0, #80]
+    sbcs x20, x20, xzr
+    stp x16, x15, [x0, #96]
+    sbc x17, x7, xzr
+    sub x15, x17, x14
+    stp x20, x15, [x0, #112]
+    ldp d14, d15, [sp, #112]
+    ldp d12, d13, [sp, #96]
+    ldp d10, d11, [sp, #80]
+    ldp d8, d9, [sp, #64]
     ldp x25, x26, [sp, #48]
     ldp x23, x24, [sp, #32]
     ldp x21, x22, [sp, #16]
-    ldp x19, x20, [sp], #144
+    ldp x19, x20, [sp], #128
     ret
 
 //***********************************************************************
