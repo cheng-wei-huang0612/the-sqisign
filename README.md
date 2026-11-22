@@ -189,42 +189,42 @@ The results below are from a native Raspberry Pi 5 run of `./bench 160`.
 
 ```text
 Before  f417ebd4c2c336ad6a9feb6f9255f95fc03acc41
-After   419afbf757a6fbd9f0338620468f166c14ead372
+After   b7c58ea1be4cf3985dc4ae4f893d04d3ab0c4f52
 ARM64 Release, CPU 2, 160 paired API trials per level
 CPU frequency at start (kHz)  2400000
 
 Level 1 (p324_3)
 Both builds passed 21,760 field checks including edges and aliases.
 fp2_mul median (13 rounds of 65,536 calls)
-  925.592 → 260.937 cycles/call, saving 71.81%
+  925.677 → 245.740 cycles/call, saving 73.45%
 Paired and cross-verified 160/160 API trials.
 API averages over 160 paired trials
 Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
-Keygen             115.713          72.154   37.64%       48.245       30.084   37.64%
-Sign               330.293         212.279   35.73%      137.708       88.506   35.73%
-Verify              50.623          28.092   44.51%       21.105       11.712   44.50%
+Keygen             115.713          71.095   38.56%       48.258       29.643   38.57%
+Sign               330.318         209.391   36.61%      137.722       87.303   36.61%
+Verify              50.620          27.546   45.58%       21.106       11.484   45.59%
 
 Level 3 (p500_27)
 Both builds passed 21,760 field checks including edges and aliases.
 fp2_mul median (13 rounds of 65,536 calls)
-  1,584.088 → 576.132 cycles/call, saving 63.63%
+  1,583.958 → 561.378 cycles/call, saving 64.56%
 Paired and cross-verified 160/160 API trials.
 API averages over 160 paired trials
 Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
-Keygen             376.143         269.237   28.42%      156.830      112.247   28.43%
-Sign             1,066.542         777.198   27.13%      444.653      324.049   27.12%
-Verify             137.565          82.700   39.88%       57.348       34.480   39.88%
+Keygen             376.063         267.891   28.76%      156.778      111.704   28.75%
+Sign             1,066.507         773.608   27.46%      444.661      322.516   27.47%
+Verify             137.559          82.017   40.38%       57.345       34.193   40.37%
 
 Level 5 (p664_17)
 Both builds passed 21,760 field checks including edges and aliases.
 fp2_mul median (13 rounds of 65,536 calls)
-  2,883.380 → 1,072.905 cycles/call, saving 62.79%
+  2,883.250 → 947.450 cycles/call, saving 67.14%
 Paired and cross-verified 160/160 API trials.
 API averages over 160 paired trials
 Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
-Keygen             825.771         567.436   31.28%      344.252      236.565   31.28%
-Sign             2,547.138       1,848.545   27.43%    1,061.924      770.697   27.42%
-Verify             341.277         207.230   39.28%      142.270       86.395   39.27%
+Keygen             825.730         549.359   33.47%      344.269      229.026   33.47%
+Sign             2,547.148       1,799.739   29.34%    1,061.896      750.324   29.34%
+Verify             341.271         197.847   42.03%      142.307       82.482   42.04%
 ```
 
 ## Examples
