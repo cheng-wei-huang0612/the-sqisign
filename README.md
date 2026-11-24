@@ -178,54 +178,54 @@ present in the checkout's Git history. The two builds and the test fixtures
 are created in a temporary directory.
 
 The optional positive integer sets the number of paired API trials per level
-for Levels 1, 3, and 5. The default is 5. Matched seeds and messages are used
-for each pair. Each API call is measured in hardware cycles and elapsed
-milliseconds using `CLOCK_MONOTONIC_RAW`. The `fp2_mul` latency benchmark
-has a fixed sample size.
+for Levels 1, 3, and 5. The default is 5. Each pair uses matching seeds and
+messages. API timings measure user-mode hardware cycles and wall time with
+`CLOCK_MONOTONIC_RAW`. The field benchmark measures `fp2_mul` and `fp2_sqr`
+separately in dependent in-place chains of 65,536 calls over 13 rounds.
 
 #### Raspberry Pi 5 results
 
-The results below are from a native Raspberry Pi 5 run of `./bench 160`.
+A native `./bench` run on 2026-11-24 compared these commits with 5 paired API
+trials per level.
 
-```text
-Before  f417ebd4c2c336ad6a9feb6f9255f95fc03acc41
-After   b7c58ea1be4cf3985dc4ae4f893d04d3ab0c4f52
-ARM64 Release, CPU 2, 160 paired API trials per level
-CPU frequency at start (kHz)  2400000
+- Before is upstream `f417ebd4c2c336ad6a9feb6f9255f95fc03acc41`.
+- After is `5f4683d93f7accb989f04c5564176bb57887f673` with the tuned
+  `fp2_mul` and `fp2_sqr` kernels for all three levels.
 
-Level 1 (p324_3)
-Both builds passed 21,760 field checks including edges and aliases.
-fp2_mul median (13 rounds of 65,536 calls)
-  925.677 → 245.740 cycles/call, saving 73.45%
-Paired and cross-verified 160/160 API trials.
-API averages over 160 paired trials
-Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
-Keygen             115.713          71.095   38.56%       48.258       29.643   38.57%
-Sign               330.318         209.391   36.61%      137.722       87.303   36.61%
-Verify              50.620          27.546   45.58%       21.106       11.484   45.59%
+Both builds used ARM64 Release with GCC 14.2.0 on Raspberry Pi 5 CPU 2.
+The initial frequency was 2.4 GHz. Firmware reported `throttled=0x0` at
+both ends of the run.
 
-Level 3 (p500_27)
-Both builds passed 21,760 field checks including edges and aliases.
-fp2_mul median (13 rounds of 65,536 calls)
-  1,583.958 → 561.378 cycles/call, saving 64.56%
-Paired and cross-verified 160/160 API trials.
-API averages over 160 paired trials
-Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
-Keygen             376.063         267.891   28.76%      156.778      111.704   28.75%
-Sign             1,066.507         773.608   27.46%      444.661      322.516   27.47%
-Verify             137.559          82.017   40.38%       57.345       34.193   40.37%
+| Level | Kernel | Before cycles/call | After cycles/call | Cycle reduction | Before ns/call | After ns/call |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| 1 (`p324_3`) | `fp2_mul` | 925.730 | 245.766 | 73.45% | 386.377 | 102.659 |
+| 1 | `fp2_sqr` | 588.281 | 228.664 | 61.13% | 245.728 | 95.446 |
+| 3 (`p500_27`) | `fp2_mul` | 1,583.733 | 561.397 | 64.55% | 660.609 | 234.380 |
+| 3 | `fp2_sqr` | 1,008.771 | 459.160 | 54.48% | 420.847 | 191.546 |
+| 5 (`p664_17`) | `fp2_mul` | 2,883.276 | 947.441 | 67.14% | 1,202.194 | 395.288 |
+| 5 | `fp2_sqr` | 1,878.078 | 610.195 | 67.51% | 783.191 | 254.583 |
 
-Level 5 (p664_17)
-Both builds passed 21,760 field checks including edges and aliases.
-fp2_mul median (13 rounds of 65,536 calls)
-  2,883.250 → 947.450 cycles/call, saving 67.14%
-Paired and cross-verified 160/160 API trials.
-API averages over 160 paired trials
-Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
-Keygen             825.730         549.359   33.47%      344.269      229.026   33.47%
-Sign             2,547.148       1,799.739   29.34%    1,061.896      750.324   29.34%
-Verify             341.271         197.847   42.03%      142.307       82.482   42.04%
-```
+| Level | API operation | Before Mcycles | After Mcycles | Before ms | After ms | Elapsed-time reduction |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | Keygen | 114.211 | 47.887 | 47.611 | 19.965 | 58.07% |
+| 1 | Sign | 348.750 | 169.472 | 145.422 | 70.689 | 51.39% |
+| 1 | Verify | 50.689 | 17.857 | 21.129 | 7.445 | 64.76% |
+| 3 | Keygen | 437.706 | 276.807 | 182.471 | 115.397 | 36.76% |
+| 3 | Sign | 1,054.395 | 619.531 | 439.598 | 258.308 | 41.24% |
+| 3 | Verify | 135.951 | 57.769 | 56.697 | 24.081 | 57.53% |
+| 5 | Keygen | 814.757 | 373.145 | 339.695 | 155.551 | 54.21% |
+| 5 | Sign | 2,395.264 | 1,203.175 | 998.578 | 501.604 | 49.77% |
+| 5 | Verify | 341.227 | 123.269 | 142.243 | 51.399 | 63.87% |
+
+Each build passed 21,760 independent multiplication checks per level,
+including edge cases and aliases. Before passed 8,704 square checks per
+level. After passed 17,184 square checks per level, including in-place calls
+and canonical outputs for inputs sampled across `[0, 2p)`. All paired API
+trials produced identical public keys and signed messages and passed
+bidirectional cross-verification.
+
+The earlier multiplication-only run is recorded in the README at commit
+`c43aff1`.
 
 ## Examples
 
