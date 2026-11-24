@@ -2462,6 +2462,7 @@ fp2_mul:
     ldp x19, x20, [sp], #144
     ret
 
+#ifndef SQISIGN_USE_ARCHIVED_FP2_SQR
 //***********************************************************************
 //  Squaring in GF(p^2), both components
 //  Operation: c0 = (a0+a1) x (a0-a1) ; c1 = 2 a0 x a1
@@ -2604,6 +2605,7 @@ fp2_sqr:
     ldp   x19, x20, [sp, #176]
     add   sp, sp, #256
     ret
+#endif
 
 //***********************************************************************
 //  Field multiplication in GF(p)

@@ -4,3 +4,8 @@ set(FP_ASM ${CMAKE_CURRENT_SOURCE_DIR}/fp_asm.S)
 include(${SAT64_DIR}/lvlx.cmake)
 
 target_compile_definitions(${LIB_GF_${SVARIANT_UPPER}} PUBLIC SQISIGN_FP2_FUSED_ASM)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_sources(${LIB_GF_${SVARIANT_UPPER}} PRIVATE fp2_sqr_candidate.S)
+    target_compile_definitions(${LIB_GF_${SVARIANT_UPPER}} PRIVATE SQISIGN_USE_ARCHIVED_FP2_SQR)
+endif()

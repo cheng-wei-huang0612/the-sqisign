@@ -906,6 +906,7 @@ Lmont_controls28:
 .quad 0x3ffffffc3ffffffc, 0x000bfffc3ffffffc
 .text
 
+#ifndef SQISIGN_USE_ARCHIVED_FP2_SQR
 //***********************************************************************
 //  Squaring in GF(p^2), both components
 //  Operation: c0 = (a0+a1) x (a0-a1) ; c1 = 2 a0 x a1
@@ -993,6 +994,7 @@ fp2_sqr:
     stp   x11, x12, [x0, #80]
     add   sp, sp, #96
     ret
+#endif
 
 //***********************************************************************
 //  Field multiplication in GF(p)
