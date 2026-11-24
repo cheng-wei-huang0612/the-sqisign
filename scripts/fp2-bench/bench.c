@@ -139,8 +139,26 @@ field_chain(fp2_t *a, fp2_t *b, unsigned long blocks)
     }
 }
 
+#define SQR_PAIR(a) \
+    fp2_sqr(a, a);  \
+    fp2_sqr(a, a)
+
+static __attribute__((noinline)) void
+square_chain(fp2_t *a, fp2_t *unused, unsigned long blocks)
+{
+    (void)unused;
+    for (unsigned long i = 0; i < blocks; ++i) {
+        SQR_PAIR(a);
+        SQR_PAIR(a);
+        SQR_PAIR(a);
+        SQR_PAIR(a);
+    }
+}
+
+static uint64_t wall_time_ns(void);
+
 static void
-measure_field(int fd, unsigned long calls)
+measure_field(int fd, unsigned long calls, int square)
 {
     uint64_t state = UINT64_C(0x953d8be56aaf32cd);
     fp2_t a, b;
@@ -151,14 +169,17 @@ measure_field(int fd, unsigned long calls)
         fail("Expected a positive multiple of eight field calls");
     }
     const unsigned long blocks = calls / calls_per_block;
-    field_chain(&a, &b, warmup_blocks);
+    void (*chain)(fp2_t *, fp2_t *, unsigned long) = square ? square_chain : field_chain;
+    chain(&a, &b, warmup_blocks);
     start_counting(fd);
-    field_chain(&a, &b, blocks);
+    const uint64_t start_ns = wall_time_ns();
+    chain(&a, &b, blocks);
+    const uint64_t elapsed_ns = wall_time_ns() - start_ns;
     const uint64_t cycles = stop_counting(fd);
     fp2_encode(encoded[0], &a);
     fp2_encode(encoded[1], &b);
     const uint64_t hash = fingerprint((const uint8_t *)encoded, sizeof(encoded), UINT64_C(14695981039346656037));
-    printf("%" PRIu64 ",%016" PRIx64 "\n", cycles, hash);
+    printf("%" PRIu64 ",%" PRIu64 ",%016" PRIx64 "\n", cycles, elapsed_ns, hash);
 }
 
 static void
@@ -203,6 +224,43 @@ check_vectors(void)
     }
     if (ferror(stdin)) {
         fail("Could not read field test vectors");
+    }
+}
+
+static void
+check_squares(void)
+{
+    struct guarded {
+        uint64_t before;
+        fp2_t value;
+        uint64_t after;
+    };
+    const uint64_t guard = UINT64_C(0x492bd975851b6827);
+    fp2_t input;
+    size_t got;
+    while ((got = fread(&input, 1, sizeof(input), stdin)) != 0) {
+        if (got != sizeof(input)) {
+            fail("Incomplete square test vector");
+        }
+        for (unsigned alias = 0; alias < 2; ++alias) {
+            struct guarded destination = { .before = guard, .after = guard };
+            struct guarded source = { .before = guard, .value = input, .after = guard };
+            struct guarded *out = alias ? &source : &destination;
+            fp2_sqr(&out->value, &source.value);
+            if (source.before != guard || source.after != guard ||
+                destination.before != guard || destination.after != guard) {
+                fail("Square touched a buffer guard");
+            }
+            if (!alias && memcmp(&source.value, &input, sizeof(input)) != 0) {
+                fail("Square modified a separate input");
+            }
+            if (fwrite(&out->value, sizeof(out->value), 1, stdout) != 1) {
+                fail("Could not emit the square test result");
+            }
+        }
+    }
+    if (ferror(stdin)) {
+        fail("Could not read square test vectors");
     }
 }
 
@@ -318,14 +376,18 @@ main(int argc, char **argv)
         check_vectors();
         return 0;
     }
+    if (argc == 2 && strcmp(argv[1], "check-sqr") == 0) {
+        check_squares();
+        return 0;
+    }
     if (argc == 3 && strcmp(argv[1], "cross-verify") == 0) {
         verify_fixtures(parse_unsigned(argv[2]));
         return 0;
     }
-    if (argc == 3 && strcmp(argv[1], "field") == 0) {
+    if (argc == 3 && (strcmp(argv[1], "field") == 0 || strcmp(argv[1], "sqr") == 0)) {
         const unsigned long calls = parse_unsigned(argv[2]);
         const int fd = open_pmu();
-        measure_field(fd, calls);
+        measure_field(fd, calls, strcmp(argv[1], "sqr") == 0);
         return close(fd) != 0;
     }
     if (argc == 5 && strcmp(argv[1], "api") == 0) {
