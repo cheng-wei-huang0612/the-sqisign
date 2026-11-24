@@ -185,44 +185,76 @@ separately in dependent in-place chains of 65,536 calls over 13 rounds.
 
 #### Raspberry Pi 5 results
 
-A native `./bench` run on 2026-11-24 compared these commits with 5 paired API
-trials per level.
+The output below is from a native Raspberry Pi 5 run of `./bench`.
 
-- Before is upstream `f417ebd4c2c336ad6a9feb6f9255f95fc03acc41`.
-- After is `5f4683d93f7accb989f04c5564176bb57887f673` with the tuned
-  `fp2_mul` and `fp2_sqr` kernels for all three levels.
+```text
+Before  f417ebd4c2c336ad6a9feb6f9255f95fc03acc41
+After   5547cf7b91e2cec898d498a04194e41527e7e104
+ARM64 Release, CPU 2, 5 paired API trials per level
+CPU frequency at start (kHz)  2400000
 
-Both builds used ARM64 Release with GCC 14.2.0 on Raspberry Pi 5 CPU 2.
-The initial frequency was 2.4 GHz. Firmware reported `throttled=0x0` at
-both ends of the run.
+Building before
 
-| Level | Kernel | Before cycles/call | After cycles/call | Cycle reduction | Before ns/call | After ns/call |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 (`p324_3`) | `fp2_mul` | 925.730 | 245.766 | 73.45% | 386.377 | 102.659 |
-| 1 | `fp2_sqr` | 588.281 | 228.664 | 61.13% | 245.728 | 95.446 |
-| 3 (`p500_27`) | `fp2_mul` | 1,583.733 | 561.397 | 64.55% | 660.609 | 234.380 |
-| 3 | `fp2_sqr` | 1,008.771 | 459.160 | 54.48% | 420.847 | 191.546 |
-| 5 (`p664_17`) | `fp2_mul` | 2,883.276 | 947.441 | 67.14% | 1,202.194 | 395.288 |
-| 5 | `fp2_sqr` | 1,878.078 | 610.195 | 67.51% | 783.191 | 254.583 |
+Building after
 
-| Level | API operation | Before Mcycles | After Mcycles | Before ms | After ms | Elapsed-time reduction |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 | Keygen | 114.211 | 47.887 | 47.611 | 19.965 | 58.07% |
-| 1 | Sign | 348.750 | 169.472 | 145.422 | 70.689 | 51.39% |
-| 1 | Verify | 50.689 | 17.857 | 21.129 | 7.445 | 64.76% |
-| 3 | Keygen | 437.706 | 276.807 | 182.471 | 115.397 | 36.76% |
-| 3 | Sign | 1,054.395 | 619.531 | 439.598 | 258.308 | 41.24% |
-| 3 | Verify | 135.951 | 57.769 | 56.697 | 24.081 | 57.53% |
-| 5 | Keygen | 814.757 | 373.145 | 339.695 | 155.551 | 54.21% |
-| 5 | Sign | 2,395.264 | 1,203.175 | 998.578 | 501.604 | 49.77% |
-| 5 | Verify | 341.227 | 123.269 | 142.243 | 51.399 | 63.87% |
+Level 1 (p324_3)
+Both builds passed 21,760 multiplication checks including edges and aliases.
+Before passed 8,704 square cases, including aliases.
+After passed 17,184 square cases, including aliases.
+fp2_mul median (13 rounds of 65,536 dependent in-place calls)
+  925.683 → 245.726 cycles/call, saving 73.45%
+  386.443 → 102.563 ns/call
+fp2_sqr median (13 rounds of 65,536 dependent in-place calls)
+  588.416 → 228.920 cycles/call, saving 61.10%
+  245.710 → 95.543 ns/call
+Paired and cross-verified 2/5 API trials.
+Paired and cross-verified 4/5 API trials.
+Paired and cross-verified 5/5 API trials.
+API averages over 5 paired trials
+Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
+Keygen             114.214          47.872   58.09%       47.627       19.974   58.06%
+Sign               348.718         169.424   51.42%      145.389       70.645   51.41%
+Verify              50.686          17.858   64.77%       21.130        7.444   64.77%
 
-Each build passed 21,760 independent multiplication checks per level,
-including edge cases and aliases. Before passed 8,704 square checks per
-level. After passed 17,184 square checks per level, including in-place calls
-and canonical outputs for inputs sampled across `[0, 2p)`. All paired API
-trials produced identical public keys and signed messages and passed
-bidirectional cross-verification.
+Level 3 (p500_27)
+Both builds passed 21,760 multiplication checks including edges and aliases.
+Before passed 8,704 square cases, including aliases.
+After passed 17,184 square cases, including aliases.
+fp2_mul median (13 rounds of 65,536 dependent in-place calls)
+  1,583.751 → 561.406 cycles/call, saving 64.55%
+  660.651 → 234.140 ns/call
+fp2_sqr median (13 rounds of 65,536 dependent in-place calls)
+  1,008.793 → 459.140 cycles/call, saving 54.49%
+  420.902 → 191.524 ns/call
+Paired and cross-verified 2/5 API trials.
+Paired and cross-verified 4/5 API trials.
+Paired and cross-verified 5/5 API trials.
+API averages over 5 paired trials
+Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
+Keygen             437.676         276.807   36.76%      182.457      115.392   36.76%
+Sign             1,054.361         619.550   41.24%      439.593      258.301   41.24%
+Verify             135.986          57.764   57.52%       56.687       24.079   57.52%
+
+Level 5 (p664_17)
+Both builds passed 21,760 multiplication checks including edges and aliases.
+Before passed 8,704 square cases, including aliases.
+After passed 17,184 square cases, including aliases.
+fp2_mul median (13 rounds of 65,536 dependent in-place calls)
+  2,882.717 → 947.275 cycles/call, saving 67.14%
+  1,202.286 → 395.285 ns/call
+fp2_sqr median (13 rounds of 65,536 dependent in-place calls)
+  1,878.128 → 610.605 cycles/call, saving 67.49%
+  783.151 → 254.930 ns/call
+Paired and cross-verified 2/5 API trials.
+Paired and cross-verified 4/5 API trials.
+Paired and cross-verified 5/5 API trials.
+API averages over 5 paired trials
+Operation   Before Mcycles   After Mcycles    Saved    Before ms     After ms    Saved
+Keygen             814.656         373.157   54.19%      339.636      155.558   54.20%
+Sign             2,395.197       1,203.195   49.77%      998.529      501.616   49.76%
+Verify             341.178         123.264   63.87%      142.218       51.387   63.87%
+
+```
 
 The earlier multiplication-only run is recorded in the README at commit
 `c43aff1`.
